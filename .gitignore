@@ -17,6 +17,9 @@ playwright-report
 # Local env overrides (may contain secrets) - never commit
 .env*.local
 
+# Local TLS certificates / keys for the HTTPS dev server - never commit
+.certs
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
