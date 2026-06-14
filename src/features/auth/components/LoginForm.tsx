@@ -1,0 +1,81 @@
+import { useForm, FormProvider } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { useNavigate } from '@tanstack/react-router'
+import { Box, Stack, FormControlLabel, Checkbox } from '@mui/material'
+import { RHFTextField } from '@/components/RHFTextField'
+import { Button } from '@/components/Button'
+import { useLogin } from '../api/authQueries'
+import { useCaptcha } from '../hooks/useCaptcha'
+import { tokenStore } from '@/api/tokenStore'
+import { useSessionStore } from '@/state/sessionStore'
+import { useNotificationStore } from '@/state/notificationStore'
+import { keepSignedIn } from '../keepSignedIn'
+import { resolveLandingRoute } from '../landing'
+import { getUserProfile } from '../api/authApi'
+import { LOGGED_IN_STATUSES } from '../api/authTypes'
+import { aseCodeToMessageKey } from '../api/aseCodes'
+
+const schema = z.object({
+  email: z.string().min(1, 'Email is required').email('Enter a valid email'),
+  password: z.string().min(1, 'Password is required'),
+  keepSignedIn: z.boolean(),
+})
+type Values = z.infer<typeof schema>
+
+export function LoginForm() {
+  const methods = useForm<Values>({
+    resolver: zodResolver(schema),
+    defaultValues: { email: '', password: '', keepSignedIn: false },
+  })
+  const login = useLogin()
+  const captcha = useCaptcha()
+  const navigate = useNavigate()
+  const notify = useNotificationStore((s) => s.push)
+
+  const onSubmit = async (v: Values) => {
+    const token = await captcha.execute()
+    const res = await login.mutateAsync({ email: v.email, password: v.password, captcha: token })
+
+    if (res.status === 'TFA_REQUIRED' && res.tokens) {
+      tokenStore.setAuthTokens(res.tokens)
+      keepSignedIn.set(v.keepSignedIn)
+      navigate({ to: '/account/login/check', search: { email: v.email } } as never)
+      return
+    }
+    if (res.code === 'ASE-001') {
+      methods.setError('password', { message: 'Invalid email or password' })
+      captcha.reset()
+      return
+    }
+    if (res.status && LOGGED_IN_STATUSES.includes(res.status as never) && res.tokens) {
+      tokenStore.setAuthTokens(res.tokens)
+      keepSignedIn.set(v.keepSignedIn)
+      useSessionStore.getState().setLoggedIn(true)
+      const profile = await getUserProfile().catch(() => undefined)
+      navigate({ to: resolveLandingRoute(profile) })
+      return
+    }
+    notify({ severity: 'error', message: aseCodeToMessageKey(res.code) })
+    captcha.reset()
+  }
+
+  return (
+    <FormProvider {...methods}>
+      <Box component="form" onSubmit={methods.handleSubmit(onSubmit)} noValidate>
+        <Stack spacing={2} sx={{ maxWidth: 360 }}>
+          <RHFTextField name="email" label="Email" type="email" autoComplete="username" />
+          <RHFTextField name="password" label="Password" type="password" autoComplete="current-password" />
+          <FormControlLabel
+            control={<Checkbox {...methods.register('keepSignedIn')} />}
+            label="Keep me signed in"
+          />
+          <Button type="submit" disabled={login.isPending}>
+            Sign in
+          </Button>
+          {captcha.element}
+        </Stack>
+      </Box>
+    </FormProvider>
+  )
+}
