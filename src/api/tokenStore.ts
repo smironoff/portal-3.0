@@ -30,7 +30,11 @@ export const tokenStore = {
   setAuthTokens(tokens: AuthTokens) {
     localStorage.setItem(STORAGE_KEYS.accessToken, tokens.accessToken)
     localStorage.setItem(STORAGE_KEYS.refreshToken, tokens.refreshToken)
-    if (tokens.idToken) localStorage.setItem(STORAGE_KEYS.idToken, tokens.idToken)
+    if (tokens.idToken) {
+      localStorage.setItem(STORAGE_KEYS.idToken, tokens.idToken)
+    } else {
+      localStorage.removeItem(STORAGE_KEYS.idToken)
+    }
     localStorage.setItem(STORAGE_KEYS.validUntil, tokens.refreshTokenValidUntil)
   },
 

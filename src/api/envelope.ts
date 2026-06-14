@@ -13,7 +13,8 @@ export type ResponseStatus =
 export interface APIResponsePayload<T> {
   module: string
   action: string
-  result: T & { message?: string }
+  result: T
+  message?: string
   status: ResponseStatus
 }
 
