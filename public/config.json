@@ -1,0 +1,16 @@
+{
+  "ENV": "staging",
+  "API_URL": "https://portalappstaging.thinkmarkets.com/cportal",
+  "RATES_URL": "https://portalappstaging.thinkmarkets.com/cportal",
+  "AUTH_URL": "https://uat-auth.thinkmarkets.com",
+  "KEYCLOAK_URL": "https://uat-auth.thinkmarkets.com",
+  "KEYCLOAK_REALM": "thinkmarkets",
+  "KEYCLOAK_CLIENT_ID": "portal-web",
+  "DEFAULT_LANGUAGE": "en",
+  "PULL_APP_STATUS_SEC": 30,
+  "PULL_NOTIFICATIONS_SEC": 300,
+  "LOGOUT_AFTER_MIN": 15,
+  "VERIFICATION_ATTEMPTS": 3,
+  "VERIFICATION_INTERVAL_SEC": 5,
+  "WTR_URL": "https://web-staging.thinktrader.com"
+}
