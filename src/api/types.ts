@@ -27,4 +27,8 @@ export type UserProfile = {
   country: Country
   approved: boolean
   preferredLanguage: { code: string; name?: string } | string
+  additionalAttributes?: {
+    inactivityTimeout?: string // minutes, as a string
+    [key: string]: unknown
+  }
 }
