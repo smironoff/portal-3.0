@@ -20,10 +20,15 @@ export const PasswordResetConfirmForm = ({ token }: { token: string }) => {
   const notify = useNotificationStore((s) => s.push)
 
   const onSubmit = async (v: Values) => {
-    const captchaToken = await captcha.execute()
-    const ok = await confirm.mutateAsync({ password: v.password, token, captcha: captchaToken })
-    if (ok) navigate({ to: '/account/reset/done' } as never)
-    else {
+    try {
+      const captchaToken = await captcha.execute()
+      const ok = await confirm.mutateAsync({ password: v.password, token, captcha: captchaToken })
+      if (ok) navigate({ to: '/account/reset/done' } as never)
+      else {
+        notify({ severity: 'error', message: 'auth.error.resetFailed' })
+        captcha.reset()
+      }
+    } catch {
       notify({ severity: 'error', message: 'auth.error.resetFailed' })
       captcha.reset()
     }
