@@ -54,7 +54,7 @@ verticals (2a provides the routing seam only).
 | Email verification   | Moved to 2b (registration-coupled)                                                                                                                                                        |
 | Forms                | React Hook Form + Zod (Foundation primitives)                                                                                                                                             |
 | Data layer           | TanStack Query mutations (login/2fa/reset) + query (profile)                                                                                                                              |
-| Captcha              | reCAPTCHA v3 (invisible) on login + reset                                                                                                                                                 |
+| Captcha              | hCaptcha (invisible) on login + reset                                                                                                                                                     |
 | Folder convention    | `src/features/auth/` (establishes the feature-folder pattern for verticals)                                                                                                               |
 | Tests                | Vitest units; component tests + integration via MSW; Playwright smoke via `/auth/*` route interception (no real backend)                                                                  |
 
@@ -150,11 +150,12 @@ store value.
 
 ### Captcha
 
-`useCaptcha` wraps reCAPTCHA v3 (invisible), executed on login and reset submits,
-returning a token passed to the API call. Adds `RECAPTCHA_SITE_KEY_V3` to the
-config schema and `VITE_RECAPTCHA_SITE_KEY_V3` to the `.env.*` files (the staging
-key exists in the legacy config). The captcha script loads only on the public
-auth screens.
+`useCaptcha` wraps **hCaptcha** (`@hcaptcha/react-hcaptcha`, invisible size),
+executed on login and reset submits, returning a token passed to the API call.
+(The legacy code comments say "reCAPTCHA" but it implements hCaptcha.) Uses the
+existing optional `HCAPTCHA_KEY` config field, supplied via `VITE_HCAPTCHA_KEY`
+in the `.env.*` files (the staging key exists in the legacy config). The captcha
+script loads only on the public auth screens.
 
 ### Landing seam (`src/features/auth/landing.ts`)
 
@@ -166,7 +167,8 @@ the Foundation's `/hello` stub.
 
 ## Error handling
 
-- Inline (form field) errors for `NOT_AUTHORIZED` on login and invalid 2FA code.
+- Inline (form field) errors for invalid login credentials (auth `code` `ASE-001`)
+  and invalid 2FA code.
 - Toast notifications (`notificationStore`) for unexpected statuses and network
   errors.
 - Legacy `ASE-*` codes mapped to i18n message keys; the mapping table lives in
@@ -190,7 +192,7 @@ the Foundation's `/hello` stub.
 New authentication and token-handling code triggers the **security/compliance
 review gate** before sign-off, as with the Foundation auth layer: confirm no
 credentials are logged, captcha tokens are not retained, the inactivity logout
-reliably clears tokens, and no secret is committed (the reCAPTCHA site key is
+reliably clears tokens, and no secret is committed (the hCaptcha site key is
 public).
 
 ## Definition of done
@@ -202,7 +204,7 @@ public).
 - Password reset request → confirm → done flow works end to end.
 - Inactivity auto-logout fires after the profile/env timeout; "keep me signed in"
   disables it; both covered by tests.
-- reCAPTCHA v3 executes on login and reset.
+- hCaptcha executes on login and reset.
 - The throwaway dev sign-in is removed; guarded routes redirect to the real login.
 - Lint, unit tests, component tests, and the Playwright smoke pass under Node 20.
 - Security/compliance review completed.
