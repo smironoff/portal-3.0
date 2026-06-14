@@ -1,6 +1,6 @@
 import { createRoute, redirect, useNavigate } from '@tanstack/react-router'
 import { Route as RootRoute } from './__root'
-import { Button } from '@mui/material'
+import { Button } from '@/components/Button'
 import { useSessionStore } from '@/state/sessionStore'
 
 export const IndexRoute = createRoute({
