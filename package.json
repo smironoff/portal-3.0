@@ -23,6 +23,7 @@
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@hcaptcha/react-hcaptcha": "^2.0.2",
     "@hookform/resolvers": "^5.4.0",
     "@mui/material": "^9.1.1",
     "@sentry/react": "^10.57.0",
