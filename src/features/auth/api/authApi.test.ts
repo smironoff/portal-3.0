@@ -26,7 +26,12 @@ describe('authApi', () => {
     http.auth.mockResolvedValue({ status: 'OK' })
     const { verifyTwoFactor } = await import('./authApi')
     await verifyTwoFactor('a@b.com', '123456')
-    expect(http.auth).toHaveBeenCalledWith('auth/tfa', 'post', { email: 'a@b.com', code: '123456' }, 0)
+    expect(http.auth).toHaveBeenCalledWith(
+      'auth/tfa',
+      'post',
+      { email: 'a@b.com', code: '123456' },
+      0
+    )
   })
 
   it('requestPasswordReset sends the TFBO forgot_password_web envelope', async () => {
@@ -34,7 +39,16 @@ describe('authApi', () => {
     const { requestPasswordReset } = await import('./authApi')
     const ok = await requestPasswordReset('a@b.com', 'cap')
     expect(http.tfbo).toHaveBeenCalledWith(
-      { payload: [{ module: 'authentication', action: 'forgot_password_web', email_id: 'a@b.com', response: 'cap' }] },
+      {
+        payload: [
+          {
+            module: 'authentication',
+            action: 'forgot_password_web',
+            email_id: 'a@b.com',
+            response: 'cap',
+          },
+        ],
+      },
       1
     )
     expect(ok).toBe(true)
@@ -45,7 +59,17 @@ describe('authApi', () => {
     const { confirmPasswordReset } = await import('./authApi')
     const ok = await confirmPasswordReset('NewPass123', 'tok', 'cap')
     expect(http.tfbo).toHaveBeenCalledWith(
-      { payload: [{ module: 'authentication', action: 'forgot_password_web', password: 'NewPass123', password_reset_token: 'tok', response: 'cap' }] },
+      {
+        payload: [
+          {
+            module: 'authentication',
+            action: 'forgot_password_web',
+            password: 'NewPass123',
+            password_reset_token: 'tok',
+            response: 'cap',
+          },
+        ],
+      },
       1
     )
     expect(ok).toBe(true)

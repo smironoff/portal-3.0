@@ -3,7 +3,7 @@ import type { AppConfig } from './schema'
 
 let cached: AppConfig | undefined
 
-function readEnv(): Record<string, string | undefined> {
+const readEnv = (): Record<string, string | undefined> => {
   const e = import.meta.env
   return {
     ENV: e.VITE_ENV ?? e.MODE,
@@ -32,7 +32,7 @@ function readEnv(): Record<string, string | undefined> {
   }
 }
 
-export function loadConfig(): AppConfig {
+export const loadConfig = (): AppConfig => {
   if (cached) return cached
   const raw = rawConfigSchema.parse(readEnv())
   if (import.meta.env.PROD && raw.ENV === 'development') {
@@ -54,6 +54,6 @@ export function loadConfig(): AppConfig {
   return cached
 }
 
-export function getConfig(): AppConfig {
+export const getConfig = (): AppConfig => {
   return loadConfig()
 }

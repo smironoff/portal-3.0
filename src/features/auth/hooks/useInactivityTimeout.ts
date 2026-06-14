@@ -2,11 +2,11 @@ import { useEffect, useRef } from 'react'
 
 const ACTIVITY_EVENTS = ['pointerdown', 'keydown', 'scroll', 'touchstart'] as const
 
-export function useInactivityTimeout(opts: {
+export const useInactivityTimeout = (opts: {
   minutes: number
   enabled: boolean
   onTimeout: () => void
-}) {
+}) => {
   const { minutes, enabled, onTimeout } = opts
   const onTimeoutRef = useRef(onTimeout)
 

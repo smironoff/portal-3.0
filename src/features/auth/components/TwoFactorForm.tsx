@@ -14,7 +14,7 @@ import { resolveLandingRoute } from '../landing'
 const schema = z.object({ code: z.string().regex(/^\d{6}$/, 'Enter the 6-digit code') })
 type Values = z.infer<typeof schema>
 
-export function TwoFactorForm({ email }: { email: string }) {
+export const TwoFactorForm = ({ email }: { email: string }) => {
   const methods = useForm<Values>({ resolver: zodResolver(schema), defaultValues: { code: '' } })
   const verify = useVerifyTwoFactor()
   const navigate = useNavigate()

@@ -9,10 +9,10 @@ export interface AuthClient {
   notifyExpired: () => void
 }
 
-export function createAuthClient(config: AppConfig): AuthClient {
+export const createAuthClient = (config: AppConfig): AuthClient => {
   let refreshPromise: Promise<boolean> | null = null
 
-  async function updateTokens(): Promise<boolean> {
+  const updateTokens = async (): Promise<boolean> => {
     const accessToken = tokenStore.getAccessToken()
     const refreshToken = tokenStore.getRefreshToken()
     if (!accessToken || !refreshToken) return false

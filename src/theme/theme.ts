@@ -3,7 +3,7 @@ import type { Theme } from '@mui/material/styles'
 import { lightTokens, darkTokens, breakpoints, ibAccent } from './tokens'
 import type { ThemeMode, Brand } from '@/state/uiStore'
 
-export function createAppTheme(mode: ThemeMode, brand: Brand): Theme {
+export const createAppTheme = (mode: ThemeMode, brand: Brand): Theme => {
   const t = mode === 'dark' ? darkTokens : lightTokens
   return createTheme({
     palette: {

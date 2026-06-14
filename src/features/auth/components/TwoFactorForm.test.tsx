@@ -4,14 +4,22 @@ import userEvent from '@testing-library/user-event'
 
 const mutateAsync = vi.fn()
 const navigate = vi.fn()
-vi.mock('../api/authQueries', () => ({ useVerifyTwoFactor: () => ({ mutateAsync, isPending: false }) }))
+vi.mock('../api/authQueries', () => ({
+  useVerifyTwoFactor: () => ({ mutateAsync, isPending: false }),
+}))
 vi.mock('@tanstack/react-router', () => ({ useNavigate: () => navigate }))
 
-beforeEach(() => { mutateAsync.mockReset(); navigate.mockReset() })
+beforeEach(() => {
+  mutateAsync.mockReset()
+  navigate.mockReset()
+})
 
 describe('TwoFactorForm', () => {
   it('submits the code and lands on success', async () => {
-    mutateAsync.mockResolvedValue({ status: 'OK', tokens: { accessToken: 'a', refreshToken: 'r', refreshTokenValidUntil: '' } })
+    mutateAsync.mockResolvedValue({
+      status: 'OK',
+      tokens: { accessToken: 'a', refreshToken: 'r', refreshTokenValidUntil: '' },
+    })
     const { TwoFactorForm } = await import('./TwoFactorForm')
     render(<TwoFactorForm email="a@b.com" />)
     await userEvent.type(screen.getByLabelText(/code/i), '123456')

@@ -13,7 +13,7 @@ import i18n from '@/i18n/i18n'
 
 const queryClient = createQueryClient()
 
-export default function App({ config }: { config: AppConfig }) {
+const App = ({ config }: { config: AppConfig }) => {
   useEffect(
     () => registerTokenExpiredHandler(queryClient, () => useSessionStore.getState().reset()),
     []
@@ -32,3 +32,5 @@ export default function App({ config }: { config: AppConfig }) {
     </SentryErrorBoundary>
   )
 }
+
+export default App

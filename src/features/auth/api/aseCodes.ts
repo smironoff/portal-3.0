@@ -7,6 +7,6 @@ const MAP: Record<string, string> = {
   'ASE-009': 'auth.error.syncFailed',
 }
 
-export function aseCodeToMessageKey(code: string | undefined): string {
+export const aseCodeToMessageKey = (code: string | undefined): string => {
   return (code && MAP[code]) || 'auth.error.generic'
 }

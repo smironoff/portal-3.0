@@ -4,7 +4,7 @@ import ChainedBackend from 'i18next-chained-backend'
 import HttpBackend from 'i18next-http-backend'
 import LocalStorageBackend from 'i18next-localstorage-backend'
 
-export function initI18n(defaultLanguage: string, buildVersion: string) {
+export const initI18n = (defaultLanguage: string, buildVersion: string) => {
   return i18n
     .use(ChainedBackend)
     .use(initReactI18next)

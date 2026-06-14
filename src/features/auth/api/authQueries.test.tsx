@@ -3,7 +3,13 @@ import { renderHook, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 
-const api = { login: vi.fn(), verifyTwoFactor: vi.fn(), getUserProfile: vi.fn(), requestPasswordReset: vi.fn(), confirmPasswordReset: vi.fn() }
+const api = {
+  login: vi.fn(),
+  verifyTwoFactor: vi.fn(),
+  getUserProfile: vi.fn(),
+  requestPasswordReset: vi.fn(),
+  confirmPasswordReset: vi.fn(),
+}
 vi.mock('./authApi', () => api)
 
 function wrapper({ children }: { children: ReactNode }) {

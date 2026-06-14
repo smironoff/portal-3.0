@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/react'
 import type { AppConfig } from '@/config/schema'
 
-export function initSentry(config: AppConfig, release: string) {
+export const initSentry = (config: AppConfig, release: string) => {
   if (!config.SENTRY_DSN) return
   Sentry.init({
     dsn: config.SENTRY_DSN,

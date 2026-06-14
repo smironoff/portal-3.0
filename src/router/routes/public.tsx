@@ -11,20 +11,23 @@ export const IndexRoute = createRoute({
   },
 })
 
+// eslint-disable-next-line react-refresh/only-export-components
+const Login = () => {
+  const navigate = useNavigate()
+  return (
+    <Button
+      onClick={() => {
+        useSessionStore.getState().setLoggedIn(true)
+        void navigate({ to: '/hello' })
+      }}
+    >
+      Dev sign in
+    </Button>
+  )
+}
+
 export const LoginRoute = createRoute({
   getParentRoute: () => RootRoute,
   path: '/account/login',
-  component: function Login() {
-    const navigate = useNavigate()
-    return (
-      <Button
-        onClick={() => {
-          useSessionStore.getState().setLoggedIn(true)
-          void navigate({ to: '/hello' })
-        }}
-      >
-        Dev sign in
-      </Button>
-    )
-  },
+  component: Login,
 })

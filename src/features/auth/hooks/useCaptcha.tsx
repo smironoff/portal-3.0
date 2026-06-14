@@ -4,7 +4,7 @@ import { useConfig } from '@/config/ConfigProvider'
 
 // Invisible hCaptcha. Returns the element to render and an async executor that
 // resolves to a token (empty string when no site key is configured).
-export function useCaptcha() {
+export const useCaptcha = () => {
   const config = useConfig()
   const ref = useRef<HCaptcha>(null)
   const siteKey = config.HCAPTCHA_KEY

@@ -23,7 +23,7 @@ const schema = z.object({
 })
 type Values = z.infer<typeof schema>
 
-export function LoginForm() {
+export const LoginForm = () => {
   const methods = useForm<Values>({
     resolver: zodResolver(schema),
     defaultValues: { email: '', password: '', keepSignedIn: false },
@@ -65,7 +65,12 @@ export function LoginForm() {
       <Box component="form" onSubmit={methods.handleSubmit(onSubmit)} noValidate>
         <Stack spacing={2} sx={{ maxWidth: 360 }}>
           <RHFTextField name="email" label="Email" type="email" autoComplete="username" />
-          <RHFTextField name="password" label="Password" type="password" autoComplete="current-password" />
+          <RHFTextField
+            name="password"
+            label="Password"
+            type="password"
+            autoComplete="current-password"
+          />
           <FormControlLabel
             control={<Checkbox {...methods.register('keepSignedIn')} />}
             label="Keep me signed in"

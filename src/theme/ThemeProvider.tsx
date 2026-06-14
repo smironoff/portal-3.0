@@ -10,7 +10,7 @@ import { useUIStore } from '@/state/uiStore'
 
 const RTL_LANGS = ['ar', 'he', 'fa', 'ur']
 
-export function AppThemeProvider({ children }: { children: ReactNode }) {
+export const AppThemeProvider = ({ children }: { children: ReactNode }) => {
   const themeMode = useUIStore((s) => s.themeMode)
   const brand = useUIStore((s) => s.brand)
   const language = useUIStore((s) => s.language)

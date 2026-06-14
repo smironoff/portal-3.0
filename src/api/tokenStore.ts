@@ -11,7 +11,7 @@ export const STORAGE_KEYS = {
   validUntil: 'vu',
 } as const
 
-function read(key: string): string {
+const read = (key: string): string => {
   return localStorage.getItem(key) ?? ''
 }
 

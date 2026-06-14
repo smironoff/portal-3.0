@@ -1,32 +1,33 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import * as authApi from './authApi'
 
-export function useLogin() {
+export const useLogin = () => {
   return useMutation({
     mutationFn: (v: { email: string; password: string; captcha: string }) =>
       authApi.login(v.email, v.password, v.captcha),
   })
 }
 
-export function useVerifyTwoFactor() {
+export const useVerifyTwoFactor = () => {
   return useMutation({
     mutationFn: (v: { email: string; code: string }) => authApi.verifyTwoFactor(v.email, v.code),
   })
 }
 
-export function useRequestPasswordReset() {
+export const useRequestPasswordReset = () => {
   return useMutation({
-    mutationFn: (v: { email: string; captcha: string }) => authApi.requestPasswordReset(v.email, v.captcha),
+    mutationFn: (v: { email: string; captcha: string }) =>
+      authApi.requestPasswordReset(v.email, v.captcha),
   })
 }
 
-export function useConfirmPasswordReset() {
+export const useConfirmPasswordReset = () => {
   return useMutation({
     mutationFn: (v: { password: string; token: string; captcha: string }) =>
       authApi.confirmPasswordReset(v.password, v.token, v.captcha),
   })
 }
 
-export function useUserProfile(enabled: boolean) {
+export const useUserProfile = (enabled: boolean) => {
   return useQuery({ queryKey: ['userProfile'], queryFn: authApi.getUserProfile, enabled })
 }
