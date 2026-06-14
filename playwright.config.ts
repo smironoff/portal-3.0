@@ -8,7 +8,7 @@ const E2E_ORIGIN = 'https://127.0.0.1:4173'
 export default defineConfig({
   testDir: './e2e',
   webServer: {
-    command: 'npm run dev -- --host 127.0.0.1 --port 4173',
+    command: 'npm run dev -- --mode test --host 127.0.0.1 --port 4173',
     url: E2E_ORIGIN,
     reuseExistingServer: true,
     timeout: 120000,
