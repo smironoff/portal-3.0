@@ -40,7 +40,7 @@ export const LoginForm = () => {
     if (res.status === 'TFA_REQUIRED' && res.tokens) {
       tokenStore.setAuthTokens(res.tokens)
       keepSignedIn.set(v.keepSignedIn)
-      navigate({ to: '/account/login/check', search: { email: v.email } } as never)
+      navigate({ to: '/account/login/check', search: { email: v.email } })
       return
     }
     if (res.code === 'ASE-001') {

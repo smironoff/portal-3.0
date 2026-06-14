@@ -31,7 +31,7 @@ export const TwoFactorForm = ({ email }: { email: string }) => {
     if (res.code === 'ASE-002') {
       useSessionStore.getState().reset()
       tokenStore.clear()
-      navigate({ to: '/account/login', search: { error: 'tfa_expired' } } as never)
+      navigate({ to: '/account/login', search: { error: 'tfa_expired' } })
       return
     }
     methods.setError('code', { message: 'Invalid code' })

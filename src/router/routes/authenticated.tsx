@@ -7,7 +7,7 @@ export const AuthenticatedRoute = createRoute({
   id: 'authenticated',
   beforeLoad: () => {
     if (!useSessionStore.getState().loggedIn) {
-      throw redirect({ to: '/account/login' })
+      throw redirect({ to: '/account/login', search: { error: undefined } })
     }
   },
   component: () => <Outlet />,

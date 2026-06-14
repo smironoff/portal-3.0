@@ -23,7 +23,7 @@ export const PasswordResetRequestForm = () => {
     try {
       const token = await captcha.execute()
       const ok = await request.mutateAsync({ email: v.email, captcha: token })
-      if (ok) navigate({ to: '/account/reset/sent', search: { email: v.email } } as never)
+      if (ok) navigate({ to: '/account/reset/sent', search: { email: v.email } })
       else {
         notify({ severity: 'error', message: 'auth.error.resetFailed' })
         captcha.reset()
