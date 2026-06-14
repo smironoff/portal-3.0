@@ -6,7 +6,7 @@
 
 **Architecture:** Feature folder `src/features/auth/` built on the Foundation. Auth API functions wrap the Foundation `httpClient` (`auth()` for `AUTH_URL`, `tfbo()` for the TFBO envelope). TanStack Query mutations/query drive the UI. RHF + Zod forms use the Foundation primitives. A lazy app-wide HTTP client singleton is added. Tests mock at the query-hook layer (component tests) and use Playwright route interception (e2e); no live backend and no MSW needed.
 
-**Tech Stack:** React 19, TypeScript 6 (strict, `verbatimModuleSyntax`, `erasableSyntaxOnly`), TanStack Router + Query, Zustand, MUI v9, React Hook Form + Zod, `@hcaptcha/react-hcaptcha`, MSW, Vitest, Playwright. **Node pinned to 20** — every command runs under `source "$HOME/.nvm/nvm.sh" && nvm use`.
+**Tech Stack:** React 19, TypeScript 6 (strict, `verbatimModuleSyntax`, `erasableSyntaxOnly`), TanStack Router + Query, Zustand, MUI v9, React Hook Form + Zod, `@hcaptcha/react-hcaptcha`, Vitest, Playwright. **Node pinned to 20** — every command runs under `source "$HOME/.nvm/nvm.sh" && nvm use`.
 
 **Spec:** `docs/superpowers/specs/2026-06-14-auth-vertical-design.md`
 **Legacy reference:** `/Volumes/WORK/ThinkMarkets/portal-2.0/src` (read-only).
