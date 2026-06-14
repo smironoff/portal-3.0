@@ -9,9 +9,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "build:staging": "tsc -b && vite build --mode staging",
-    "build:uat": "tsc -b && vite build --mode uat",
-    "build:production": "tsc -b && vite build --mode production",
+    "build:staging": "node scripts/validate-env.mjs staging && tsc -b && vite build --mode staging",
+    "build:uat": "node scripts/validate-env.mjs uat && tsc -b && vite build --mode uat",
+    "build:production": "node scripts/validate-env.mjs production && tsc -b && vite build --mode production",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
