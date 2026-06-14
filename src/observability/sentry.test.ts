@@ -7,7 +7,7 @@ vi.mock('@sentry/react', () => ({
 }))
 
 import * as Sentry from '@sentry/react'
-import { initSentry } from './sentry'
+import { initSentry, stripParam } from './sentry'
 import type { AppConfig } from '@/config/schema'
 
 const baseConfig: AppConfig = {
@@ -69,5 +69,23 @@ describe('initSentry', () => {
       '1.0.0'
     )
     expect(Sentry.init).toHaveBeenCalledWith(expect.objectContaining({ tracesSampleRate: 0.01 }))
+  })
+})
+
+describe('stripParam', () => {
+  it('removes the named query param from a URL', () => {
+    expect(stripParam('https://app.test/account/reset/new?token=secret', 'token')).toBe(
+      'https://app.test/account/reset/new'
+    )
+  })
+
+  it('preserves other query params', () => {
+    expect(stripParam('https://app.test/x?token=secret&lang=en', 'token')).toBe(
+      'https://app.test/x?lang=en'
+    )
+  })
+
+  it('returns the original string for a non-parseable URL', () => {
+    expect(stripParam('not a url', 'token')).toBe('not a url')
   })
 })

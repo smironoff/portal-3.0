@@ -16,7 +16,8 @@ export const useInactivityTimeout = (opts: {
 
   useEffect(() => {
     if (!enabled) return
-    const ms = minutes * 60_000
+    const safeMinutes = Number.isFinite(minutes) && minutes > 0 ? minutes : 15
+    const ms = safeMinutes * 60_000
     let timer: ReturnType<typeof setTimeout>
     const reset = () => {
       clearTimeout(timer)

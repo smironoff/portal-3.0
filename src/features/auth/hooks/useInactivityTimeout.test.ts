@@ -20,6 +20,15 @@ describe('useInactivityTimeout', () => {
     expect(onTimeout).not.toHaveBeenCalled()
   })
 
+  it('falls back to 15 minutes when minutes is NaN', () => {
+    const onTimeout = vi.fn()
+    renderHook(() => useInactivityTimeout({ minutes: NaN, enabled: true, onTimeout }))
+    vi.advanceTimersByTime(60_000)
+    expect(onTimeout).not.toHaveBeenCalled()
+    vi.advanceTimersByTime(16 * 60_000)
+    expect(onTimeout).toHaveBeenCalledTimes(1)
+  })
+
   it('resets the timer on user activity', () => {
     const onTimeout = vi.fn()
     renderHook(() => useInactivityTimeout({ minutes: 1, enabled: true, onTimeout }))

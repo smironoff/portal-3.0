@@ -17,7 +17,9 @@ export const login = (
 }
 
 export const verifyTwoFactor = (email: string, code: string): Promise<AuthResult> => {
-  return getHttpClient().auth<AuthResult>('auth/tfa', 'post', { email, code }, Authorize.Yes)
+  return getHttpClient().auth<AuthResult>('auth/tfa', 'post', { email, code }, Authorize.Yes, {
+    skipRefresh: true,
+  })
 }
 
 export const requestPasswordReset = async (

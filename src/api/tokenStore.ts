@@ -9,6 +9,7 @@ export const STORAGE_KEYS = {
   refreshToken: '__rt_',
   idToken: '__it_',
   validUntil: 'vu',
+  keepLogged: 'keepLogged',
 } as const
 
 const read = (key: string): string => {

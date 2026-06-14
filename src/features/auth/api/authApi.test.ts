@@ -30,7 +30,8 @@ describe('authApi', () => {
       'auth/tfa',
       'post',
       { email: 'a@b.com', code: '123456' },
-      0
+      0,
+      { skipRefresh: true }
     )
   })
 

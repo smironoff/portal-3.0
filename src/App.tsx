@@ -15,7 +15,11 @@ const queryClient = createQueryClient()
 
 const App = ({ config }: { config: AppConfig }) => {
   useEffect(
-    () => registerTokenExpiredHandler(queryClient, () => useSessionStore.getState().reset()),
+    () =>
+      registerTokenExpiredHandler(queryClient, () => {
+        useSessionStore.getState().reset()
+        router.navigate({ to: '/account/login', search: { error: undefined } })
+      }),
     []
   )
   return (

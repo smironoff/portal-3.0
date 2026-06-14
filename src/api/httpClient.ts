@@ -20,7 +20,13 @@ interface TfboRequest {
 export interface HttpClient {
   request: <T>(url: string, method: string, auth: Authorize, data?: unknown) => Promise<T>
   tfbo: <T>(data: TfboRequest, auth?: Authorize) => Promise<APIResponse<T>>
-  auth: <T>(path: string, method: string, data?: unknown, auth?: Authorize) => Promise<T>
+  auth: <T>(
+    path: string,
+    method: string,
+    data?: unknown,
+    auth?: Authorize,
+    opts?: { skipRefresh?: boolean }
+  ) => Promise<T>
 }
 
 export const createHttpClient = (config: AppConfig, authClient: AuthClient): HttpClient => {
@@ -38,7 +44,11 @@ export const createHttpClient = (config: AppConfig, authClient: AuthClient): Htt
       credentials: 'include',
       body: data ? JSON.stringify(data) : undefined,
     })
-    return res.json() as Promise<T>
+    try {
+      return (await res.json()) as T
+    } catch {
+      throw new Error(`Non-JSON response (HTTP ${res.status})`)
+    }
   }
 
   const tfbo = async <T>(
@@ -66,12 +76,13 @@ export const createHttpClient = (config: AppConfig, authClient: AuthClient): Htt
     path: string,
     method: string,
     data?: unknown,
-    a: Authorize = Authorize.Yes
+    a: Authorize = Authorize.Yes,
+    opts?: { skipRefresh?: boolean }
   ): Promise<T> => {
     const send = () =>
       request<T & { code?: string; status?: string }>(`${config.AUTH_URL}/${path}`, method, a, data)
     const res = await send()
-    if (a === Authorize.Yes && res.code && res.status !== 'OK') {
+    if (!opts?.skipRefresh && a === Authorize.Yes && res.code && res.status !== 'OK') {
       if (await authClient.refreshOnce()) return send()
       authClient.notifyExpired()
       throw new SessionExpiredError()

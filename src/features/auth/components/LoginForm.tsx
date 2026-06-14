@@ -34,30 +34,35 @@ export const LoginForm = () => {
   const notify = useNotificationStore((s) => s.push)
 
   const onSubmit = async (v: Values) => {
-    const token = await captcha.execute()
-    const res = await login.mutateAsync({ email: v.email, password: v.password, captcha: token })
+    try {
+      const token = await captcha.execute()
+      const res = await login.mutateAsync({ email: v.email, password: v.password, captcha: token })
 
-    if (res.status === 'TFA_REQUIRED' && res.tokens) {
-      tokenStore.setAuthTokens(res.tokens)
-      keepSignedIn.set(v.keepSignedIn)
-      navigate({ to: '/account/login/check', search: { email: v.email } })
-      return
-    }
-    if (res.code === 'ASE-001') {
-      methods.setError('password', { message: 'Invalid email or password' })
+      if (res.status === 'TFA_REQUIRED' && res.tokens) {
+        tokenStore.setAuthTokens(res.tokens)
+        keepSignedIn.set(v.keepSignedIn)
+        navigate({ to: '/account/login/check', search: { email: v.email } })
+        return
+      }
+      if (res.code === 'ASE-001') {
+        methods.setError('password', { message: 'Invalid email or password' })
+        captcha.reset()
+        return
+      }
+      if (res.status && LOGGED_IN_STATUSES.includes(res.status as never) && res.tokens) {
+        tokenStore.setAuthTokens(res.tokens)
+        keepSignedIn.set(v.keepSignedIn)
+        useSessionStore.getState().setLoggedIn(true)
+        const profile = await getUserProfile().catch(() => undefined)
+        navigate({ to: resolveLandingRoute(profile) })
+        return
+      }
+      notify({ severity: 'error', message: aseCodeToMessageKey(res.code) })
       captcha.reset()
-      return
+    } catch {
+      notify({ severity: 'error', message: 'auth.error.generic' })
+      captcha.reset()
     }
-    if (res.status && LOGGED_IN_STATUSES.includes(res.status as never) && res.tokens) {
-      tokenStore.setAuthTokens(res.tokens)
-      keepSignedIn.set(v.keepSignedIn)
-      useSessionStore.getState().setLoggedIn(true)
-      const profile = await getUserProfile().catch(() => undefined)
-      navigate({ to: resolveLandingRoute(profile) })
-      return
-    }
-    notify({ severity: 'error', message: aseCodeToMessageKey(res.code) })
-    captcha.reset()
   }
 
   return (

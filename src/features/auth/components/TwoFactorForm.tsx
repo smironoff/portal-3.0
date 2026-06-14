@@ -20,21 +20,25 @@ export const TwoFactorForm = ({ email }: { email: string }) => {
   const navigate = useNavigate()
 
   const onSubmit = async (v: Values) => {
-    const res = await verify.mutateAsync({ email, code: v.code })
-    if (res.status === 'OK' && res.tokens) {
-      tokenStore.setAuthTokens(res.tokens)
-      useSessionStore.getState().setLoggedIn(true)
-      const profile = await getUserProfile().catch(() => undefined)
-      navigate({ to: resolveLandingRoute(profile) })
-      return
+    try {
+      const res = await verify.mutateAsync({ email, code: v.code })
+      if (res.status === 'OK' && res.tokens) {
+        tokenStore.setAuthTokens(res.tokens)
+        useSessionStore.getState().setLoggedIn(true)
+        const profile = await getUserProfile().catch(() => undefined)
+        navigate({ to: resolveLandingRoute(profile) })
+        return
+      }
+      if (res.code === 'ASE-002') {
+        useSessionStore.getState().reset()
+        tokenStore.clear()
+        navigate({ to: '/account/login', search: { error: 'tfa_expired' } })
+        return
+      }
+      methods.setError('code', { message: 'Invalid code' })
+    } catch {
+      methods.setError('code', { message: 'Verification failed, please try again' })
     }
-    if (res.code === 'ASE-002') {
-      useSessionStore.getState().reset()
-      tokenStore.clear()
-      navigate({ to: '/account/login', search: { error: 'tfa_expired' } })
-      return
-    }
-    methods.setError('code', { message: 'Invalid code' })
   }
 
   return (
