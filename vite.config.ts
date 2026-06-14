@@ -13,7 +13,9 @@ function readDevHttps(): { key: Buffer; cert: Buffer } | undefined {
   const key = path.join(CERT_DIR, 'server.key')
   const cert = path.join(CERT_DIR, 'server.crt')
   if (!fs.existsSync(key) || !fs.existsSync(cert)) {
-    console.warn(`[vite] ${CERT_DIR}/server.{key,crt} not found - dev server will fall back to HTTP`)
+    console.warn(
+      `[vite] ${CERT_DIR}/server.{key,crt} not found - dev server will fall back to HTTP`
+    )
     return undefined
   }
   return { key: fs.readFileSync(key), cert: fs.readFileSync(cert) }

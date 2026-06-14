@@ -7,7 +7,15 @@ import type { AppConfig } from '@/config/schema'
 const cfg = { API_DATA_URL: 'https://api.test/nsdata', AUTH_URL: 'https://auth.test' } as AppConfig
 
 function payload(status: string, result = {}) {
-  return { ok: true, json: async () => ({ id: 1, session_id: 's', token: 't', payload: [{ module: 'm', action: 'a', status, result }] }) }
+  return {
+    ok: true,
+    json: async () => ({
+      id: 1,
+      session_id: 's',
+      token: 't',
+      payload: [{ module: 'm', action: 'a', status, result }],
+    }),
+  }
 }
 
 describe('httpClient.tfbo', () => {
@@ -20,7 +28,13 @@ describe('httpClient.tfbo', () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(payload('NOT_AUTHORIZED'))
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ status: 'OK', tokens: { accessToken: 'a2', refreshToken: 'r2', refreshTokenValidUntil: '' } }) })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status: 'OK',
+          tokens: { accessToken: 'a2', refreshToken: 'r2', refreshTokenValidUntil: '' },
+        }),
+      })
       .mockResolvedValueOnce(payload('OK', { value: 42 }))
     vi.stubGlobal('fetch', fetchMock)
 
@@ -38,11 +52,16 @@ describe('httpClient.tfbo', () => {
     window.addEventListener('TokenExpired', expired)
     vi.stubGlobal(
       'fetch',
-      vi.fn().mockResolvedValueOnce(payload('NOT_AUTHORIZED')).mockResolvedValueOnce({ ok: true, json: async () => ({ status: 'ERR' }) })
+      vi
+        .fn()
+        .mockResolvedValueOnce(payload('NOT_AUTHORIZED'))
+        .mockResolvedValueOnce({ ok: true, json: async () => ({ status: 'ERR' }) })
     )
     const auth = createAuthClient(cfg)
     const http = createHttpClient(cfg, auth)
-    await expect(http.tfbo({ payload: [{ module: 'm', action: 'a' }] })).rejects.toThrow(/session expired/i)
+    await expect(http.tfbo({ payload: [{ module: 'm', action: 'a' }] })).rejects.toThrow(
+      /session expired/i
+    )
     expect(expired).toHaveBeenCalled()
     window.removeEventListener('TokenExpired', expired)
   })

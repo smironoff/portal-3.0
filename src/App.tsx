@@ -16,7 +16,7 @@ const queryClient = createQueryClient()
 export default function App({ config }: { config: AppConfig }) {
   useEffect(
     () => registerTokenExpiredHandler(queryClient, () => useSessionStore.getState().reset()),
-    [],
+    []
   )
   return (
     <SentryErrorBoundary fallback={<div role="alert">Application error</div>}>

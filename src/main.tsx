@@ -14,7 +14,7 @@ async function bootstrap() {
   createRoot(rootEl).render(
     <StrictMode>
       <App config={config} />
-    </StrictMode>,
+    </StrictMode>
   )
 }
 

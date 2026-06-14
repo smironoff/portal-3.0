@@ -31,7 +31,10 @@ describe('authClient.refreshOnce', () => {
   })
 
   it('returns false and fires TokenExpired path when refresh fails', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({ status: 'ERR' }) })))
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({ ok: true, json: async () => ({ status: 'ERR' }) }))
+    )
     const auth = createAuthClient(cfg)
     const ok = await auth.refreshOnce()
     expect(ok).toBe(false)
@@ -44,7 +47,11 @@ describe('authClient.refreshOnce', () => {
   })
 
   it('does not attempt refresh when the refresh token is already expired', async () => {
-    tokenStore.setAuthTokens({ accessToken: 'old', refreshToken: 'r', refreshTokenValidUntil: '2000-01-01T00:00:00.000Z' })
+    tokenStore.setAuthTokens({
+      accessToken: 'old',
+      refreshToken: 'r',
+      refreshTokenValidUntil: '2000-01-01T00:00:00.000Z',
+    })
     const fetchMock = vi.fn()
     vi.stubGlobal('fetch', fetchMock)
     const auth = createAuthClient(cfg)

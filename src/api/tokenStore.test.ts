@@ -25,7 +25,12 @@ describe('tokenStore', () => {
   })
 
   it('removes stale idToken when setAuthTokens is called without one', () => {
-    tokenStore.setAuthTokens({ accessToken: 'a', refreshToken: 'r', idToken: 'i', refreshTokenValidUntil: '' })
+    tokenStore.setAuthTokens({
+      accessToken: 'a',
+      refreshToken: 'r',
+      idToken: 'i',
+      refreshTokenValidUntil: '',
+    })
     tokenStore.setAuthTokens({ accessToken: 'a2', refreshToken: 'r2', refreshTokenValidUntil: '' })
     expect(localStorage.getItem(STORAGE_KEYS.idToken)).toBeNull()
   })

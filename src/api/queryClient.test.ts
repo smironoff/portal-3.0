@@ -14,7 +14,9 @@ describe('registerTokenExpiredHandler', () => {
   it('runs the teardown callback on TokenExpired and unregisters cleanly', () => {
     const qc = createQueryClient()
     let calls = 0
-    const off = registerTokenExpiredHandler(qc, () => { calls++ })
+    const off = registerTokenExpiredHandler(qc, () => {
+      calls++
+    })
     window.dispatchEvent(new CustomEvent('TokenExpired', { detail: { source: 'authClient' } }))
     expect(calls).toBe(1)
     off()
@@ -25,7 +27,9 @@ describe('registerTokenExpiredHandler', () => {
   it('ignores a plain TokenExpired event without the authClient source marker', () => {
     const qc = createQueryClient()
     let calls = 0
-    const off = registerTokenExpiredHandler(qc, () => { calls++ })
+    const off = registerTokenExpiredHandler(qc, () => {
+      calls++
+    })
     window.dispatchEvent(new Event('TokenExpired'))
     expect(calls).toBe(0)
     off()

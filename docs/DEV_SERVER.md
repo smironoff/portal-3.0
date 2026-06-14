@@ -5,9 +5,11 @@ The dev server runs at **`https://portal-test.thinkmarkets.com`** on **port 443*
 ## One-time setup
 
 1. **Hosts entry** (already present on the original dev machine):
+
    ```
    127.0.0.1 portal-test.thinkmarkets.com
    ```
+
    Add it to `/etc/hosts` if missing.
 
 2. **TLS certificates.** Place `server.crt` and `server.key` in `.certs/` (git-ignored). The certificate must be issued for `portal-test.thinkmarkets.com`. The bundled certs are signed by a local "Test CA"; import `.certs/ca.crt` into your OS/browser trust store so the browser trusts the dev server. Without certs, the dev server falls back to plain HTTP.

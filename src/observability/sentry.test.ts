@@ -54,21 +54,20 @@ describe('initSentry', () => {
         sendDefaultPii: false,
         environment: 'staging',
         release: '2.0.0',
-      }),
+      })
     )
   })
 
   it('applies a lower tracesSampleRate in uat environment', () => {
     initSentry({ ...baseConfig, ENV: 'uat', SENTRY_DSN: 'https://key@sentry.io/123' }, '1.0.0')
-    expect(Sentry.init).toHaveBeenCalledWith(
-      expect.objectContaining({ tracesSampleRate: 0.1 }),
-    )
+    expect(Sentry.init).toHaveBeenCalledWith(expect.objectContaining({ tracesSampleRate: 0.1 }))
   })
 
   it('applies the default tracesSampleRate in non-uat environments', () => {
-    initSentry({ ...baseConfig, ENV: 'production', SENTRY_DSN: 'https://key@sentry.io/123' }, '1.0.0')
-    expect(Sentry.init).toHaveBeenCalledWith(
-      expect.objectContaining({ tracesSampleRate: 0.01 }),
+    initSentry(
+      { ...baseConfig, ENV: 'production', SENTRY_DSN: 'https://key@sentry.io/123' },
+      '1.0.0'
     )
+    expect(Sentry.init).toHaveBeenCalledWith(expect.objectContaining({ tracesSampleRate: 0.01 }))
   })
 })

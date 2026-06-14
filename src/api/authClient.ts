@@ -46,7 +46,9 @@ export function createAuthClient(config: AppConfig): AuthClient {
     },
     notifyExpired() {
       tokenStore.clear()
-      window.dispatchEvent(new CustomEvent(TOKEN_EXPIRED_EVENT, { detail: { source: 'authClient' } }))
+      window.dispatchEvent(
+        new CustomEvent(TOKEN_EXPIRED_EVENT, { detail: { source: 'authClient' } })
+      )
     },
   }
 }

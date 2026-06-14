@@ -22,7 +22,7 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
         key: isRtl ? 'mui-rtl' : 'mui',
         stylisPlugins: isRtl ? [prefixer, rtlPlugin] : [prefixer],
       }),
-    [isRtl],
+    [isRtl]
   )
   const theme = useMemo(() => createAppTheme(themeMode, brand), [themeMode, brand])
 

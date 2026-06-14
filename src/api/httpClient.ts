@@ -24,7 +24,12 @@ export interface HttpClient {
 }
 
 export function createHttpClient(config: AppConfig, authClient: AuthClient): HttpClient {
-  async function request<T>(url: string, method: string, auth: Authorize, data?: unknown): Promise<T> {
+  async function request<T>(
+    url: string,
+    method: string,
+    auth: Authorize,
+    data?: unknown
+  ): Promise<T> {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' }
     if (auth === Authorize.Yes) headers.Authorization = `Bearer ${tokenStore.getAccessToken()}`
     const res = await fetch(url, {
@@ -36,7 +41,10 @@ export function createHttpClient(config: AppConfig, authClient: AuthClient): Htt
     return res.json() as Promise<T>
   }
 
-  async function tfbo<T>(data: TfboRequest, auth: Authorize = Authorize.Yes): Promise<APIResponse<T>> {
+  async function tfbo<T>(
+    data: TfboRequest,
+    auth: Authorize = Authorize.Yes
+  ): Promise<APIResponse<T>> {
     const send = () => {
       const body: TfboRequest = { ...data }
       if (auth === Authorize.Yes) {
@@ -54,8 +62,14 @@ export function createHttpClient(config: AppConfig, authClient: AuthClient): Htt
     return res
   }
 
-  async function authRequest<T>(path: string, method: string, data?: unknown, a: Authorize = Authorize.Yes): Promise<T> {
-    const send = () => request<T & { code?: string; status?: string }>(`${config.AUTH_URL}/${path}`, method, a, data)
+  async function authRequest<T>(
+    path: string,
+    method: string,
+    data?: unknown,
+    a: Authorize = Authorize.Yes
+  ): Promise<T> {
+    const send = () =>
+      request<T & { code?: string; status?: string }>(`${config.AUTH_URL}/${path}`, method, a, data)
     const res = await send()
     if (a === Authorize.Yes && res.code && res.status !== 'OK') {
       if (await authClient.refreshOnce()) return send()
