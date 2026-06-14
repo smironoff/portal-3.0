@@ -11,6 +11,11 @@ node_modules
 dist
 dist-ssr
 *.local
+test-results
+playwright-report
+
+# Local env overrides (may contain secrets) - never commit
+.env*.local
 
 # Editor directories and files
 .vscode/*

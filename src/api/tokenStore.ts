@@ -21,6 +21,7 @@ export const tokenStore = {
   getIdToken: () => read(STORAGE_KEYS.idToken),
   getTfboSession: () => read(STORAGE_KEYS.session),
   getTfboToken: () => read(STORAGE_KEYS.token),
+  getValidUntil: () => read(STORAGE_KEYS.validUntil),
 
   setTfbo(session: string, token: string) {
     localStorage.setItem(STORAGE_KEYS.session, session)

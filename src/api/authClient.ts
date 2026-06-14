@@ -16,6 +16,8 @@ export function createAuthClient(config: AppConfig): AuthClient {
     const accessToken = tokenStore.getAccessToken()
     const refreshToken = tokenStore.getRefreshToken()
     if (!accessToken || !refreshToken) return false
+    const validUntil = tokenStore.getValidUntil()
+    if (validUntil && Date.now() > new Date(validUntil).getTime()) return false
     try {
       const res = await fetch(`${config.AUTH_URL}/auth/refresh`, {
         method: 'POST',
@@ -44,7 +46,7 @@ export function createAuthClient(config: AppConfig): AuthClient {
     },
     notifyExpired() {
       tokenStore.clear()
-      window.dispatchEvent(new Event(TOKEN_EXPIRED_EVENT))
+      window.dispatchEvent(new CustomEvent(TOKEN_EXPIRED_EVENT, { detail: { source: 'authClient' } }))
     },
   }
 }

@@ -15,10 +15,19 @@ describe('registerTokenExpiredHandler', () => {
     const qc = createQueryClient()
     let calls = 0
     const off = registerTokenExpiredHandler(qc, () => { calls++ })
-    window.dispatchEvent(new Event('TokenExpired'))
+    window.dispatchEvent(new CustomEvent('TokenExpired', { detail: { source: 'authClient' } }))
     expect(calls).toBe(1)
     off()
-    window.dispatchEvent(new Event('TokenExpired'))
+    window.dispatchEvent(new CustomEvent('TokenExpired', { detail: { source: 'authClient' } }))
     expect(calls).toBe(1)
+  })
+
+  it('ignores a plain TokenExpired event without the authClient source marker', () => {
+    const qc = createQueryClient()
+    let calls = 0
+    const off = registerTokenExpiredHandler(qc, () => { calls++ })
+    window.dispatchEvent(new Event('TokenExpired'))
+    expect(calls).toBe(0)
+    off()
   })
 })

@@ -37,4 +37,21 @@ describe('loadConfig', () => {
     const { loadConfig } = await import('./configStore')
     expect(() => loadConfig()).toThrow()
   })
+
+  it('throws when ENV=production points at non-production infrastructure', async () => {
+    vi.stubEnv('VITE_ENV', 'production')
+    vi.stubEnv('VITE_API_URL', 'https://portalappstaging.thinkmarkets.com/cportal')
+    const { loadConfig } = await import('./configStore')
+    expect(() => loadConfig()).toThrow(/non-production infrastructure/i)
+  })
+
+  it('does not throw when ENV=production uses production-like URLs', async () => {
+    vi.stubEnv('VITE_ENV', 'production')
+    vi.stubEnv('VITE_API_URL', 'https://portalapp.thinkmarkets.com/cportal')
+    vi.stubEnv('VITE_RATES_URL', 'https://portalapp.thinkmarkets.com/cportal')
+    vi.stubEnv('VITE_AUTH_URL', 'https://auth.thinkmarkets.com')
+    vi.stubEnv('VITE_KEYCLOAK_URL', 'https://auth.thinkmarkets.com')
+    const { loadConfig } = await import('./configStore')
+    expect(() => loadConfig()).not.toThrow()
+  })
 })

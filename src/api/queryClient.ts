@@ -15,7 +15,8 @@ export function createQueryClient(): QueryClient {
 // Wire global session teardown: when any layer dispatches TokenExpired,
 // clear the query cache and close the session gate.
 export function registerTokenExpiredHandler(qc: QueryClient, onExpired: () => void): () => void {
-  const handler = () => {
+  const handler = (e: Event) => {
+    if (!(e instanceof CustomEvent) || e.detail?.source !== 'authClient') return
     qc.clear()
     onExpired()
   }

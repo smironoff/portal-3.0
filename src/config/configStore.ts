@@ -38,6 +38,12 @@ export function loadConfig(): AppConfig {
   if (import.meta.env.PROD && raw.ENV === 'development') {
     throw new Error('Development configuration detected in a production build')
   }
+  if (raw.ENV === 'production') {
+    const credentialUrls = [raw.API_URL, raw.AUTH_URL, raw.KEYCLOAK_URL, raw.RATES_URL]
+    if (credentialUrls.some((u) => /staging|uat|localhost/i.test(u))) {
+      throw new Error('Production configuration points at non-production infrastructure')
+    }
+  }
   cached = {
     ...raw,
     API_DATA_URL: raw.API_URL + '/nsdata',

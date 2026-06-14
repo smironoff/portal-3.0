@@ -1,11 +1,13 @@
 import { z } from 'zod'
 
+const httpsUrl = z.url().refine((v) => v.startsWith('https://'), { message: 'URL must use HTTPS' })
+
 export const rawConfigSchema = z.object({
   ENV: z.string(),
-  API_URL: z.url(),
-  RATES_URL: z.url(),
-  AUTH_URL: z.url(),
-  KEYCLOAK_URL: z.url(),
+  API_URL: httpsUrl,
+  RATES_URL: httpsUrl,
+  AUTH_URL: httpsUrl,
+  KEYCLOAK_URL: httpsUrl,
   KEYCLOAK_REALM: z.string(),
   KEYCLOAK_CLIENT_ID: z.string(),
   DEFAULT_LANGUAGE: z.string().default('en'),

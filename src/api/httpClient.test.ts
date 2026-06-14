@@ -42,7 +42,7 @@ describe('httpClient.tfbo', () => {
     )
     const auth = createAuthClient(cfg)
     const http = createHttpClient(cfg, auth)
-    await http.tfbo({ payload: [{ module: 'm', action: 'a' }] })
+    await expect(http.tfbo({ payload: [{ module: 'm', action: 'a' }] })).rejects.toThrow(/session expired/i)
     expect(expired).toHaveBeenCalled()
     window.removeEventListener('TokenExpired', expired)
   })

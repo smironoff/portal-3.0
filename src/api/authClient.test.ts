@@ -42,4 +42,13 @@ describe('authClient.refreshOnce', () => {
     const auth = createAuthClient(cfg)
     expect(await auth.refreshOnce()).toBe(false)
   })
+
+  it('does not attempt refresh when the refresh token is already expired', async () => {
+    tokenStore.setAuthTokens({ accessToken: 'old', refreshToken: 'r', refreshTokenValidUntil: '2000-01-01T00:00:00.000Z' })
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+    const auth = createAuthClient(cfg)
+    expect(await auth.refreshOnce()).toBe(false)
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
 })

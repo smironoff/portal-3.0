@@ -2,6 +2,7 @@ import type { AppConfig } from '@/config/schema'
 import type { APIResponse } from './envelope'
 import type { AuthClient } from './authClient'
 import { tokenStore } from './tokenStore'
+import { SessionExpiredError } from './errors'
 
 export const Authorize = {
   Yes: 0,
@@ -48,6 +49,7 @@ export function createHttpClient(config: AppConfig, authClient: AuthClient): Htt
     if (auth === Authorize.Yes && res.payload?.[0]?.status === 'NOT_AUTHORIZED') {
       if (await authClient.refreshOnce()) return send()
       authClient.notifyExpired()
+      throw new SessionExpiredError()
     }
     return res
   }
@@ -58,6 +60,7 @@ export function createHttpClient(config: AppConfig, authClient: AuthClient): Htt
     if (a === Authorize.Yes && res.code && res.status !== 'OK') {
       if (await authClient.refreshOnce()) return send()
       authClient.notifyExpired()
+      throw new SessionExpiredError()
     }
     return res
   }
