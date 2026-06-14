@@ -1,34 +1,40 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-const RAW = {
-  ENV: 'staging',
-  API_URL: 'https://example.com/cportal',
-  RATES_URL: 'https://example.com/cportal',
-  AUTH_URL: 'https://auth.example.com',
-  KEYCLOAK_URL: 'https://kc.example.com',
-  KEYCLOAK_REALM: 'portal',
-  KEYCLOAK_CLIENT_ID: 'portal-web',
-  DEFAULT_LANGUAGE: 'en',
-  PULL_APP_STATUS_SEC: 30,
-  LOGOUT_AFTER_MIN: 15,
+const ENV: Record<string, string> = {
+  VITE_ENV: 'staging',
+  VITE_API_URL: 'https://example.com/cportal',
+  VITE_RATES_URL: 'https://example.com/cportal',
+  VITE_AUTH_URL: 'https://auth.example.com',
+  VITE_KEYCLOAK_URL: 'https://kc.example.com',
+  VITE_KEYCLOAK_REALM: 'portal',
+  VITE_KEYCLOAK_CLIENT_ID: 'portal-web',
+  VITE_DEFAULT_LANGUAGE: 'en',
+  VITE_PULL_APP_STATUS_SEC: '30',
+  VITE_LOGOUT_AFTER_MIN: '15',
 }
 
 describe('loadConfig', () => {
   beforeEach(() => {
     vi.resetModules()
+    for (const [k, v] of Object.entries(ENV)) vi.stubEnv(k, v)
   })
+  afterEach(() => vi.unstubAllEnvs())
 
   it('derives the TFBO data URL from API_URL', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => RAW })))
     const { loadConfig } = await import('./configStore')
-    const cfg = await loadConfig()
+    const cfg = loadConfig()
     expect(cfg.API_DATA_URL).toBe('https://example.com/cportal/nsdata')
     expect(cfg.PAYMENT_URL).toBe('https://example.com/cportal/payment')
   })
 
-  it('throws a clear error when config fetch fails', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false, json: async () => ({}) })))
+  it('coerces numeric env strings to numbers', async () => {
     const { loadConfig } = await import('./configStore')
-    await expect(loadConfig()).rejects.toThrow(/configuration/i)
+    expect(loadConfig().PULL_APP_STATUS_SEC).toBe(30)
+  })
+
+  it('throws when a required variable is missing or invalid', async () => {
+    vi.stubEnv('VITE_API_URL', '')
+    const { loadConfig } = await import('./configStore')
+    expect(() => loadConfig()).toThrow()
   })
 })

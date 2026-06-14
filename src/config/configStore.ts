@@ -3,17 +3,41 @@ import type { AppConfig } from './schema'
 
 let cached: AppConfig | undefined
 
-export async function loadConfig(): Promise<AppConfig> {
-  if (cached) return cached
-  // Always the same file: one build is promoted across environments.
-  let res: Response
-  try {
-    res = await fetch(`/config.json?v=${Date.now()}`)
-  } catch (e) {
-    throw new Error(`Error fetching configuration from server: ${(e as Error).message}`, { cause: e })
+function readEnv(): Record<string, string | undefined> {
+  const e = import.meta.env
+  return {
+    ENV: e.VITE_ENV ?? e.MODE,
+    API_URL: e.VITE_API_URL,
+    RATES_URL: e.VITE_RATES_URL,
+    AUTH_URL: e.VITE_AUTH_URL,
+    KEYCLOAK_URL: e.VITE_KEYCLOAK_URL,
+    KEYCLOAK_REALM: e.VITE_KEYCLOAK_REALM,
+    KEYCLOAK_CLIENT_ID: e.VITE_KEYCLOAK_CLIENT_ID,
+    DEFAULT_LANGUAGE: e.VITE_DEFAULT_LANGUAGE,
+    PULL_APP_STATUS_SEC: e.VITE_PULL_APP_STATUS_SEC,
+    PULL_NOTIFICATIONS_SEC: e.VITE_PULL_NOTIFICATIONS_SEC,
+    LOGOUT_AFTER_MIN: e.VITE_LOGOUT_AFTER_MIN,
+    VERIFICATION_ATTEMPTS: e.VITE_VERIFICATION_ATTEMPTS,
+    VERIFICATION_INTERVAL_SEC: e.VITE_VERIFICATION_INTERVAL_SEC,
+    WTR_URL: e.VITE_WTR_URL,
+    PAMM_PORTAL: e.VITE_PAMM_PORTAL,
+    VENUS_API_URL: e.VITE_VENUS_API_URL,
+    BROKEREE_URL: e.VITE_BROKEREE_URL,
+    ADDRESS_LOOKUP_URL: e.VITE_ADDRESS_LOOKUP_URL,
+    EXCHANGE_RATES_URL: e.VITE_EXCHANGE_RATES_URL,
+    FA2_URL: e.VITE_FA2_URL,
+    SENTRY_DSN: e.VITE_SENTRY_DSN,
+    RECAPTCHA_SITE_KEY_V3: e.VITE_RECAPTCHA_SITE_KEY_V3,
+    HCAPTCHA_KEY: e.VITE_HCAPTCHA_KEY,
   }
-  if (!res.ok) throw new Error('Error fetching configuration from server')
-  const raw = rawConfigSchema.parse(await res.json())
+}
+
+export function loadConfig(): AppConfig {
+  if (cached) return cached
+  const raw = rawConfigSchema.parse(readEnv())
+  if (import.meta.env.PROD && raw.ENV === 'development') {
+    throw new Error('Development configuration detected in a production build')
+  }
   cached = {
     ...raw,
     API_DATA_URL: raw.API_URL + '/nsdata',
@@ -25,6 +49,5 @@ export async function loadConfig(): Promise<AppConfig> {
 }
 
 export function getConfig(): AppConfig {
-  if (!cached) throw new Error('Config accessed before loadConfig() resolved')
-  return cached
+  return loadConfig()
 }
