@@ -5,6 +5,6 @@ import type { Country } from '@/features/registration/types'
 export const useApplicantCountry = (): Country | undefined => {
   const { data: profile } = useUserProfile(true)
   const { data: countries } = useCountries()
-  if (!profile || !countries) return undefined
+  if (!profile || !countries || !profile.country) return undefined
   return countries.find((c) => c.id === profile.country.id)
 }
