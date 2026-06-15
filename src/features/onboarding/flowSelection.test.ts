@@ -39,4 +39,12 @@ describe('selectFlow', () => {
     expect(selectFlow({ portalAccountDomain: 'AU' })).toEqual({ kind: 'general', jurisdiction: 'AU' })
     expect(selectFlow({ portalAccountDomain: 'TMLC' })).toEqual({ kind: 'simplified' })
   })
+  it('South Africa with a non-TMLC domain falls through to general routing', () => {
+    const sa = { code3: 'ZAF', isSimplifyOnboarding: false }
+    expect(selectFlow({ portalAccountDomain: 'UK' }, sa)).toEqual({ kind: 'general', jurisdiction: 'UK' })
+  })
+  it('UAE with isSimplifyOnboarding true but non-TMLC domain is NOT simplified (UAE/SA gate takes precedence)', () => {
+    const uae = { code3: 'ARE', isSimplifyOnboarding: true }
+    expect(selectFlow({ portalAccountDomain: 'UK' }, uae)).toEqual({ kind: 'general', jurisdiction: 'UK' })
+  })
 })
