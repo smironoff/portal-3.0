@@ -15,7 +15,10 @@ export const EmploymentStatusStep = ({ onNext, onBack, canGoBack }: StepComponen
   const patch = useOnboardingStore((s) => s.patch)
   const { control, handleSubmit } = useForm<Values>({
     resolver: zodResolver(schema),
-    defaultValues: { employment: draft.accountHolderEmploymentStatus ?? EMPLOYMENT_OPTIONS[0]!.value },
+    defaultValues: {
+      employment:
+        draft.accountHolderEmploymentStatus ?? draft.employmentStatus ?? EMPLOYMENT_OPTIONS[0]!.value,
+    },
   })
   const submit = handleSubmit((v) => {
     patch({ accountHolderEmploymentStatus: v.employment, employmentStatus: v.employment })

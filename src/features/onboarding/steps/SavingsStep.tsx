@@ -15,7 +15,8 @@ export const SavingsStep = ({ onNext, onBack, canGoBack }: StepComponentProps) =
   const patch = useOnboardingStore((s) => s.patch)
   const { control, handleSubmit } = useForm<Values>({
     resolver: zodResolver(schema),
-    defaultValues: { estimatedNetWorth: draft.estimatedNetWorth ?? AU_MONEY_OPTIONS[0]!.value },
+    // No default bracket: force an explicit selection (see AnnualIncomeStep).
+    defaultValues: { estimatedNetWorth: draft.estimatedNetWorth ?? '' },
   })
   const submit = handleSubmit((v) => {
     patch({ estimatedNetWorth: v.estimatedNetWorth })
@@ -26,8 +27,17 @@ export const SavingsStep = ({ onNext, onBack, canGoBack }: StepComponentProps) =
       <Controller
         name="estimatedNetWorth"
         control={control}
-        render={({ field }) => (
-          <TextField select label="Estimated net worth" {...field}>
+        render={({ field, fieldState }) => (
+          <TextField
+            select
+            label="Estimated net worth"
+            error={!!fieldState.error}
+            helperText={fieldState.error?.message}
+            {...field}
+          >
+            <MenuItem value="" disabled>
+              Select...
+            </MenuItem>
             {AU_MONEY_OPTIONS.map((o) => (
               <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>
             ))}

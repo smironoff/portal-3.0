@@ -15,7 +15,9 @@ export const AnnualIncomeStep = ({ onNext, onBack, canGoBack }: StepComponentPro
   const patch = useOnboardingStore((s) => s.patch)
   const { control, handleSubmit } = useForm<Values>({
     resolver: zodResolver(schema),
-    defaultValues: { approximateIncomeValue: draft.approximateIncomeValue ?? AU_MONEY_OPTIONS[0]!.value },
+    // No default bracket: force an explicit selection (auto-selecting a bracket
+    // would silently record an unverified income for a regulated suitability check).
+    defaultValues: { approximateIncomeValue: draft.approximateIncomeValue ?? '' },
   })
   const submit = handleSubmit((v) => {
     patch({ approximateIncomeValue: v.approximateIncomeValue })
@@ -26,8 +28,17 @@ export const AnnualIncomeStep = ({ onNext, onBack, canGoBack }: StepComponentPro
       <Controller
         name="approximateIncomeValue"
         control={control}
-        render={({ field }) => (
-          <TextField select label="Annual income" {...field}>
+        render={({ field, fieldState }) => (
+          <TextField
+            select
+            label="Annual income"
+            error={!!fieldState.error}
+            helperText={fieldState.error?.message}
+            {...field}
+          >
+            <MenuItem value="" disabled>
+              Select...
+            </MenuItem>
             {AU_MONEY_OPTIONS.map((o) => (
               <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>
             ))}
