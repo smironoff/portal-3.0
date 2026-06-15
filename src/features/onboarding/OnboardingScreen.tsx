@@ -68,7 +68,10 @@ export const OnboardingScreen = () => {
   if (status === 'LEVEL1_APPROVED' && !draft.completed) {
     return <Level1Done applicationId={app.applicationId} />
   }
-  if (status === 'PENDING_KYC' || status === 'PENDING_REVIEW' || status === 'APPROVED') {
+  if (status === 'APPROVED') {
+    return <Typography>Your account is approved.</Typography>
+  }
+  if (status === 'PENDING_KYC' || status === 'PENDING_REVIEW') {
     return <OnboardingComplete />
   }
 

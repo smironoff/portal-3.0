@@ -1,21 +1,19 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Stack, Typography } from '@mui/material'
-import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/components/Button'
 import { OtpInput } from './components/OtpInput'
 import { useSendOtp, useVerifyOtp } from './api/emailQueries'
 import { useUserProfile } from '@/features/auth/api/authQueries'
 import { useNotificationStore } from '@/state/notificationStore'
-import { resolveLandingRoute } from '@/features/auth/landing'
 import type { SendOtpParams } from './api/emailApi'
 
 export const EmailVerificationScreen = () => {
   const { data: profile } = useUserProfile(true)
   const send = useSendOtp()
   const verify = useVerifyOtp()
-  const navigate = useNavigate()
   const notify = useNotificationStore((s) => s.push)
   const sent = useRef(false)
+  const [verified, setVerified] = useState(false)
 
   // The profile carries a language code, not the numeric id this endpoint expects;
   // default to English (id 1) as the legacy flow does. TODO(verify): map code -> id.
@@ -39,12 +37,21 @@ export const EmailVerificationScreen = () => {
 
   if (!profile) return <Typography>Loading...</Typography>
 
+  if (verified) {
+    return (
+      <Stack spacing={2} sx={{ maxWidth: 420, mx: 'auto', mt: 4 }}>
+        <Typography variant="h4">Email verified</Typography>
+        <Typography>Thank you. Your email address has been confirmed and your application is being processed.</Typography>
+      </Stack>
+    )
+  }
+
   const onComplete = async (otp: string) => {
     try {
       const ok = await verify.mutateAsync({ otp, email: profile.email })
       if (ok) {
+        setVerified(true)
         notify({ severity: 'success', message: 'Email verified' })
-        navigate({ to: resolveLandingRoute(profile) })
       } else {
         notify({ severity: 'error', message: 'Invalid or expired code' })
       }
@@ -57,6 +64,9 @@ export const EmailVerificationScreen = () => {
     <Stack spacing={3} sx={{ maxWidth: 420, mx: 'auto', mt: 4 }}>
       <Typography variant="h4">Verify your email</Typography>
       <Typography>We sent a 6-digit code to {profile.email}.</Typography>
+      {(send.isError || send.data === false) && (
+        <Typography color="error">We could not send a verification code. Please use Resend below.</Typography>
+      )}
       <OtpInput onComplete={onComplete} />
       <Button variant="text" disabled={send.isPending} onClick={() => { const p = sendParams(); if (p) send.mutate(p) }}>
         Resend code

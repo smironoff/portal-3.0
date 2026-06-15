@@ -74,6 +74,6 @@ test('completed onboarding leads to a successful email verification', async ({ p
     await page.getByLabel(`Digit ${i}`).fill(String(i))
   }
 
-  // Step 5: successful verification navigates back to /onboarding
-  await expect(page).toHaveURL(/\/onboarding/)
+  // Step 5: successful verification shows inline confirmation
+  await expect(page.getByText(/email verified/i)).toBeVisible()
 })
