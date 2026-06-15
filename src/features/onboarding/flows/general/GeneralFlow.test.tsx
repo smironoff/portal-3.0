@@ -16,7 +16,7 @@ const wrapper = ({ children }: { children: ReactNode }) => {
   return <QueryClientProvider client={qc}>{children}</QueryClientProvider>
 }
 
-const Ok = ({ onNext }: StepComponentProps) => <button onClick={onNext}>Continue</button>
+const Ok = ({ onNext }: StepComponentProps) => <button onClick={() => onNext()}>Continue</button>
 const Fail = () => <div>FAILURE PAGE</div>
 
 beforeEach(() => { useOnboardingStore.getState().reset(); incremental.mockClear() })
@@ -30,6 +30,20 @@ describe('GeneralFlow', () => {
     const { GeneralFlow } = await import('./GeneralFlow')
     render(<GeneralFlow steps={steps} applicationId={1} questions={[]} />, { wrapper })
     await userEvent.click(screen.getByRole('button', { name: /continue/i }))
+    expect(await screen.findByText('FAILURE PAGE')).toBeInTheDocument()
+  })
+
+  it('renders the failure step when a step passes appropriatenessLevel FAIL via onNext', async () => {
+    const Cancel = ({ onNext }: StepComponentProps) => (
+      <button onClick={() => onNext({ appropriatenessLevel: 'FAIL' })}>Cancel</button>
+    )
+    const steps: StepField[] = [
+      { fields: [], component: Cancel, category: 'assessment', isLast: true },
+      { fields: [], component: () => <div>FAILURE PAGE</div>, category: 'assessment', isFailure: true },
+    ]
+    const { GeneralFlow } = await import('./GeneralFlow')
+    render(<GeneralFlow steps={steps} applicationId={1} questions={[]} />, { wrapper })
+    await userEvent.click(screen.getByRole('button', { name: /cancel/i }))
     expect(await screen.findByText('FAILURE PAGE')).toBeInTheDocument()
   })
 })

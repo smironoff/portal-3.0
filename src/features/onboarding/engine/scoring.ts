@@ -34,3 +34,6 @@ export const scoreAssessment = (
   const answers = getUserAnswers(questions, details)
   return labels.reduce((acc, label) => acc + (answers[label]?.score ?? 0), 0)
 }
+
+export const scoreAll = (questions: Question[], details: QuestionsIDs[] = []): number =>
+  Object.values(getUserAnswers(questions, details)).reduce((acc, a) => acc + (a.score ?? 0), 0)

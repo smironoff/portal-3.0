@@ -13,7 +13,7 @@ export type StepCategory =
   | 'income'
 
 export interface StepComponentProps {
-  onNext: () => void
+  onNext: (patch?: Partial<AppInfo>) => void
   onBack?: () => void
   canGoBack: boolean
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getUserAnswers, scoreAssessment } from './scoring'
+import { getUserAnswers, scoreAssessment, scoreAll } from './scoring'
 import type { Question } from '../api/types'
 
 const questions: Question[] = [
@@ -20,5 +20,12 @@ describe('scoring', () => {
   })
   it('treats unanswered/unknown labels as 0', () => {
     expect(scoreAssessment(questions, [], ['a1', 'a2'])).toBe(0)
+  })
+  it('scoreAll sums every answered question score', () => {
+    const details = [{ question: 1, answer: 12 }, { question: 2, answer: 22 }] // 5 + 4
+    expect(scoreAll(questions, details)).toBe(9)
+  })
+  it('scoreAll is 0 with no answers', () => {
+    expect(scoreAll(questions, [])).toBe(0)
   })
 })

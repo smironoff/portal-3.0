@@ -52,25 +52,19 @@ export const GeneralFlow = ({
   if (step.isFailure) return <Typography>Loading...</Typography>
   const Comp = step.component
 
-  const advance = async () => {
-    // Guard against re-entrant submits while a mutation is in flight.
+  const advance = async (override?: Partial<AppInfo>) => {
     if (submitting) return
     setSubmitting(true)
     try {
-      let app: Partial<AppInfo> = { ...useOnboardingStore.getState().draft, applicationId }
-      // Only treat FAIL as failure when set by THIS submit's beforeSubmit; reading
-      // app.appropriatenessLevel could carry a STALE FAIL from a hydrated draft.
-      let computedLevel: string | undefined
+      let app: Partial<AppInfo> = { ...useOnboardingStore.getState().draft, applicationId, ...override }
+      let computedLevel: string | undefined = override?.appropriatenessLevel
       if (step.beforeSubmit) {
-        const scored = await step.beforeSubmit(app, questions)
-        computedLevel = scored.appropriatenessLevel
-        app = scored
-        // Persist beforeSubmit result before the network call (existing behaviour).
-        patch(app)
+        app = await step.beforeSubmit(app, questions)
+        computedLevel = app.appropriatenessLevel
       }
+      patch(app)
       const res = await incremental.mutateAsync(step.isLast ? { ...app, completed: true } : app)
-      const status = res.applicationStatus
-      if (!CONTINUE_STATUSES.includes(status) || computedLevel === 'FAIL') {
+      if (!CONTINUE_STATUSES.includes(res.applicationStatus) || computedLevel === 'FAIL') {
         setFailed(true)
         return
       }
@@ -78,10 +72,7 @@ export const GeneralFlow = ({
         await queryClient.invalidateQueries({ queryKey: ['application'] })
         return
       }
-      // Use the patched draft for next-step navigation; skip isFailure steps.
-      const next = getNextStep(steps, currentStep, useOnboardingStore.getState().draft)
-      const nextStep = steps[next]
-      setCurrentStep(nextStep?.isFailure === true ? getNextStep(steps, next, useOnboardingStore.getState().draft) : next)
+      setCurrentStep(getNextStep(steps, currentStep, useOnboardingStore.getState().draft))
     } catch {
       notify({ severity: 'error', message: 'onboarding.error.saveFailed' })
     } finally {
