@@ -56,3 +56,37 @@ export const AU_SOURCE_OF_FUNDS_OPTIONS = [
 ]
 
 export const AU_CONTACT_US_LINK = 'https://www.thinkmarkets.com/au/support/contact-us/'
+
+export const TMCY = {
+  sourceWealth: 'sourceWealth',
+  turnover: 'turnover',
+  incomingFunds: 'incomingFunds',
+  education: 'education',
+  describeTradingStrategy: 'describeTradingStrategy',
+  futuresOptionsExperience: 'futuresOptionsExperience',
+  executedMoreThan10CFDTrades: 'executedMoreThan10CFDTrades',
+  personalProfit: 'personalProfit',
+  useLeverage: 'useLeverage',
+  unwantedMarketMovements: 'unwantedMarketMovements',
+  appleStocknearMinimumRequiredBalance: 'appleStocknearMinimumRequiredBalance',
+  describeHighVolatility: 'describeHighVolatility',
+} as const
+
+// Ordered TMCY assessment/income questions rendered as steps (the last carries scoring).
+export const TMCY_QUESTION_LABELS: string[] = [
+  TMCY.sourceWealth,
+  TMCY.turnover,
+  TMCY.incomingFunds,
+  TMCY.education,
+  TMCY.describeTradingStrategy,
+  TMCY.futuresOptionsExperience,
+  TMCY.executedMoreThan10CFDTrades,
+  TMCY.personalProfit,
+  TMCY.useLeverage,
+  TMCY.unwantedMarketMovements,
+  TMCY.appleStocknearMinimumRequiredBalance,
+  TMCY.describeHighVolatility,
+]
+
+export const TMCY_PASS_THRESHOLD = 21
+export const TMCY_REFER_THRESHOLD = 11

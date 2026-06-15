@@ -67,6 +67,11 @@ export interface AppInfo {
   estimatedNetWorth?: string
   // jurisdiction
   portalAccountDomain?: string
+  // tax
+  taxIdentificationNumber?: string
+  accountHolderNationality?: number
+  accountHolderIdNumber?: string
+  consentAccepted?: string
   [key: string]: unknown
 }
 
