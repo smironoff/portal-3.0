@@ -6,15 +6,19 @@ const sendMutate = vi.fn()
 const verifyMutateAsync = vi.fn()
 const profile = { id: 1, firstName: 'Ann', lastName: 'Lee', email: 'a@b.com', country: { id: 1 } }
 
+const isUserVerifiedData = vi.hoisted(() => ({ value: false }))
+
 vi.mock('@/features/auth/api/authQueries', () => ({ useUserProfile: () => ({ data: profile }) }))
 vi.mock('./api/emailQueries', () => ({
   useSendOtp: () => ({ mutate: sendMutate, isPending: false, isError: false, data: undefined }),
   useVerifyOtp: () => ({ mutateAsync: verifyMutateAsync }),
+  useIsUserVerified: () => ({ data: isUserVerifiedData.value }),
 }))
 
 beforeEach(() => {
   sendMutate.mockReset()
   verifyMutateAsync.mockReset()
+  isUserVerifiedData.value = false
 })
 
 describe('EmailVerificationScreen', () => {
@@ -34,5 +38,13 @@ describe('EmailVerificationScreen', () => {
     for (let i = 1; i <= 6; i++) await userEvent.type(screen.getByLabelText(`Digit ${i}`), String(i))
     expect(verifyMutateAsync).toHaveBeenCalledWith({ otp: '123456', email: 'a@b.com' })
     expect(await screen.findByText(/email verified/i)).toBeInTheDocument()
+  })
+
+  it('shows verified confirmation and does not send OTP when email is already verified', async () => {
+    isUserVerifiedData.value = true
+    const { EmailVerificationScreen } = await import('./EmailVerificationScreen')
+    render(<EmailVerificationScreen />)
+    expect(await screen.findByText(/email verified/i)).toBeInTheDocument()
+    expect(sendMutate).not.toHaveBeenCalled()
   })
 })

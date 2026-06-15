@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Stack, Typography } from '@mui/material'
 import { Button } from '@/components/Button'
 import { OtpInput } from './components/OtpInput'
-import { useSendOtp, useVerifyOtp } from './api/emailQueries'
+import { useSendOtp, useVerifyOtp, useIsUserVerified } from './api/emailQueries'
 import { useUserProfile } from '@/features/auth/api/authQueries'
 import { useNotificationStore } from '@/state/notificationStore'
 import type { SendOtpParams } from './api/emailApi'
@@ -12,8 +12,10 @@ export const EmailVerificationScreen = () => {
   const send = useSendOtp()
   const verify = useVerifyOtp()
   const notify = useNotificationStore((s) => s.push)
+  const alreadyVerified = useIsUserVerified(profile?.email)
   const sent = useRef(false)
   const [verified, setVerified] = useState(false)
+  const isVerified = verified || alreadyVerified.data === true
 
   // The profile carries a language code, not the numeric id this endpoint expects;
   // default to English (id 1) as the legacy flow does. TODO(verify): map code -> id.
@@ -28,16 +30,16 @@ export const EmailVerificationScreen = () => {
 
   useEffect(() => {
     const params = sendParams()
-    if (params && !sent.current) {
+    if (params && !sent.current && alreadyVerified.data !== true) {
       sent.current = true
       send.mutate(params)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile])
+  }, [profile, alreadyVerified.data])
 
   if (!profile) return <Typography>Loading...</Typography>
 
-  if (verified) {
+  if (isVerified) {
     return (
       <Stack spacing={2} sx={{ maxWidth: 420, mx: 'auto', mt: 4 }}>
         <Typography variant="h4">Email verified</Typography>
