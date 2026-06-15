@@ -21,12 +21,16 @@ const builders = { AU: buildAuSteps, TMCY: buildTmcySteps, UK: buildUkSteps } as
 const OnboardingComplete = () => {
   const navigate = useNavigate()
   const { data: profile } = useUserProfile(true)
-  const required = useIsEmailVerificationRequired(profile?.country.id)
+  const required = useIsEmailVerificationRequired(profile?.country?.id)
   const verified = useIsUserVerified(profile?.email)
   if (required.isLoading || verified.isLoading) {
     return <Typography>Your application is being processed.</Typography>
   }
-  const needsEmail = required.data === true && verified.data !== true
+  // Fail-closed: only an explicit "not required" suppresses the prompt. If the
+  // required-check errors/returns undefined we still prompt (safer for a regulatory
+  // control). TODO(compliance): confirm the desired fail direction and whether the
+  // backend hard-enforces email verification before APPROVED (the button is non-blocking).
+  const needsEmail = required.data !== false && verified.data !== true
   return (
     <Stack spacing={2} sx={{ maxWidth: 420 }}>
       <Typography>Your application is being processed. Document verification is the next step.</Typography>

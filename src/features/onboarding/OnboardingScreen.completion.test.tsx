@@ -48,4 +48,12 @@ describe('OnboardingScreen completion', () => {
     render(<OnboardingScreen />)
     expect(screen.queryByRole('button', { name: /verify your email/i })).not.toBeInTheDocument()
   })
+
+  it('shows the email verification button when required-check is uncertain (fail-closed)', async () => {
+    mockIsEmailVerificationRequired.mockReturnValue({ data: undefined, isLoading: false })
+    mockIsUserVerified.mockReturnValue({ data: false, isLoading: false })
+    const { OnboardingScreen } = await import('./OnboardingScreen')
+    render(<OnboardingScreen />)
+    expect(screen.getByRole('button', { name: /verify your email/i })).toBeInTheDocument()
+  })
 })

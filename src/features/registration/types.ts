@@ -9,7 +9,7 @@ export interface Organization {
 
 export interface Country extends BaseCountry {
   used?: boolean
-  forceEmailValidate?: boolean
+  forceEmailValidate?: boolean // reserved/audit; the live email gate uses the emailvalidation/isemail_verification_required query, not this flag
   isSimplifyOnboarding?: boolean
   organization: Organization
 }

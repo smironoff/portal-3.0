@@ -18,6 +18,7 @@ export const selectFlow = (
 ): FlowSelection => {
   const domain = app.portalAccountDomain
   if (country) {
+    // ZAF = South Africa, ARE = UAE (matches legacy checkForSimplifiedOnboarding; NOT Saudi Arabia 'SAU').
     const isUaeOrSa = country.code3 === 'ARE' || country.code3 === 'ZAF'
     if (isUaeOrSa) {
       if (domain === 'TMLC') return { kind: 'simplified' }
