@@ -23,6 +23,7 @@ describe('country helpers', () => {
       mk({ id: 4, name: 'Narnia', code3: 'NAR', used: false }),
     ]
     expect(filterCountries(list).map((c) => c.code3)).toEqual(['ALB', 'ZMB'])
+    expect(filterCountries(list).map((c) => c.name)).toEqual(['Albania', 'Zambia'])
   })
 
   it('getLanguageId defaults to English (1) and matches the current language', () => {
