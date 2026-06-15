@@ -10,6 +10,7 @@ import { ResetRequestRoute } from '@/features/auth/routes/resetRequest'
 import { ResetSentRoute } from '@/features/auth/routes/resetSent'
 import { ResetConfirmRoute } from '@/features/auth/routes/resetConfirm'
 import { ResetDoneRoute } from '@/features/auth/routes/resetDone'
+import { VerifyEmailRoute } from '@/features/emailVerification/routes/verifyEmail'
 
 const routeTree = RootRoute.addChildren([
   IndexRoute,
@@ -20,7 +21,7 @@ const routeTree = RootRoute.addChildren([
   ResetSentRoute,
   ResetConfirmRoute,
   ResetDoneRoute,
-  AuthenticatedRoute.addChildren([OnboardingRoute]),
+  AuthenticatedRoute.addChildren([OnboardingRoute, VerifyEmailRoute]),
 ])
 
 export const router = createRouter({ routeTree })
