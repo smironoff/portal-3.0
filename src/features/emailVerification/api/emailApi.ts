@@ -23,3 +23,13 @@ export const verifyOtpCode = async (otpValue: string, email: string): Promise<bo
   )
   return res.payload?.[0]?.status === 'OK'
 }
+
+export const isUserVerified = async (email: string): Promise<boolean> => {
+  const res = await getHttpClient().tfboCall<boolean>('emailvalidation', 'isuserverified', { userEmail: email }, Authorize.No)
+  return res.payload?.[0]?.result === true
+}
+
+export const isEmailVerificationRequired = async (countryId: number): Promise<boolean> => {
+  const res = await getHttpClient().tfboCall<boolean>('emailvalidation', 'isemail_verification_required', { originCountry: countryId }, Authorize.No)
+  return res.payload?.[0]?.result === true
+}

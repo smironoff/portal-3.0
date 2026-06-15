@@ -32,4 +32,27 @@ describe('email verification api', () => {
     const { verifyOtpCode } = await import('./emailApi')
     expect(await verifyOtpCode('000000', 'a@b.com')).toBe(false)
   })
+
+  it('isUserVerified calls emailvalidation/isuserverified and coerces the boolean', async () => {
+    tfboCall.mockResolvedValue({ payload: [{ status: 'OK', result: true }] })
+    const { isUserVerified } = await import('./emailApi')
+    const { Authorize } = await import('@/api/httpClient')
+    expect(await isUserVerified('a@b.com')).toBe(true)
+    expect(tfboCall).toHaveBeenCalledWith('emailvalidation', 'isuserverified', { userEmail: 'a@b.com' }, Authorize.No)
+  })
+
+  it('isEmailVerificationRequired calls isemail_verification_required with originCountry', async () => {
+    tfboCall.mockResolvedValue({ payload: [{ status: 'OK', result: false }] })
+    const { isEmailVerificationRequired } = await import('./emailApi')
+    const { Authorize } = await import('@/api/httpClient')
+    expect(await isEmailVerificationRequired(7)).toBe(false)
+    expect(tfboCall).toHaveBeenCalledWith('emailvalidation', 'isemail_verification_required', { originCountry: 7 }, Authorize.No)
+  })
+
+  it('status helpers return false on a non-OK / empty payload', async () => {
+    tfboCall.mockResolvedValue({ payload: [] })
+    const { isUserVerified, isEmailVerificationRequired } = await import('./emailApi')
+    expect(await isUserVerified('a@b.com')).toBe(false)
+    expect(await isEmailVerificationRequired(7)).toBe(false)
+  })
 })
