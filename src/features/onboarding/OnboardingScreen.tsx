@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Stack, Typography } from '@mui/material'
+import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/components/Button'
 import { useApplication } from './api/onboardingQueries'
 import { useOnboardingStore } from './state/onboardingStore'
@@ -11,8 +12,32 @@ import { buildUkSteps } from './flows/general/jurisdictions/uk'
 import { JurisdictionNotAvailable } from './flows/JurisdictionNotAvailable'
 import { useQuestionsList } from './flows/simplified/useQuestionsList'
 import { selectFlow } from './flowSelection'
+import { useApplicantCountry } from './hooks/useApplicantCountry'
+import { useUserProfile } from '@/features/auth/api/authQueries'
+import { useIsEmailVerificationRequired, useIsUserVerified } from '@/features/emailVerification/api/emailQueries'
 
 const builders = { AU: buildAuSteps, TMCY: buildTmcySteps, UK: buildUkSteps } as const
+
+const OnboardingComplete = () => {
+  const navigate = useNavigate()
+  const { data: profile } = useUserProfile(true)
+  const required = useIsEmailVerificationRequired(profile?.country?.id)
+  const verified = useIsUserVerified(profile?.email)
+  if (required.isLoading || verified.isLoading) {
+    return <Typography>Your application is being processed.</Typography>
+  }
+  // Fail-closed: only an explicit "not required" suppresses the prompt. If the
+  // required-check errors/returns undefined we still prompt (safer for a regulatory
+  // control). TODO(compliance): confirm the desired fail direction and whether the
+  // backend hard-enforces email verification before APPROVED (the button is non-blocking).
+  const needsEmail = required.data !== false && verified.data !== true
+  return (
+    <Stack spacing={2} sx={{ maxWidth: 420 }}>
+      <Typography>Your application is being processed. Document verification is the next step.</Typography>
+      {needsEmail && <Button onClick={() => navigate({ to: '/account/verify-email' })}>Verify your email</Button>}
+    </Stack>
+  )
+}
 
 const Level1Done = ({ applicationId }: { applicationId?: number }) => {
   const [go, setGo] = useState(false)
@@ -35,7 +60,8 @@ export const OnboardingScreen = () => {
   // Always call hooks unconditionally (rules of hooks).
   // useQuestionsList and useMemo are only consumed in the general branch below.
   const questions = useQuestionsList()
-  const flow = selectFlow(app ?? {})
+  const country = useApplicantCountry()
+  const flow = selectFlow(app ?? {}, country)
   const jurisdiction = flow.kind === 'general' ? flow.jurisdiction : 'AU'
   const steps = useMemo(() => builders[jurisdiction](questions), [jurisdiction, questions])
 
@@ -57,8 +83,11 @@ export const OnboardingScreen = () => {
   if (status === 'LEVEL1_APPROVED' && !draft.completed) {
     return <Level1Done applicationId={app.applicationId} />
   }
-  if (status === 'PENDING_KYC' || status === 'PENDING_REVIEW' || status === 'APPROVED') {
-    return <Typography>Your application is being processed. Document verification is the next step.</Typography>
+  if (status === 'APPROVED') {
+    return <Typography>Your account is approved.</Typography>
+  }
+  if (status === 'PENDING_KYC' || status === 'PENDING_REVIEW') {
+    return <OnboardingComplete />
   }
 
   if (flow.kind === 'general') {
