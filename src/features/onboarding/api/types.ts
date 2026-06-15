@@ -56,6 +56,17 @@ export interface AppInfo {
   accountHolderStateProvince?: string
   accountApplicationQuestionDetails?: QuestionsIDs[]
   appropriatenessLevel?: 'PASS' | 'REFER' | 'FAIL'
+  // employment / financial
+  accountHolderEmploymentStatus?: string
+  employmentStatus?: string
+  occupation?: string
+  industry?: string
+  employerName?: string
+  sourceOfFunds?: string
+  approximateIncomeValue?: string
+  estimatedNetWorth?: string
+  // jurisdiction
+  portalAccountDomain?: string
   [key: string]: unknown
 }
 
