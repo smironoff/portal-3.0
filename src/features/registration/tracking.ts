@@ -23,11 +23,13 @@ export const readTracking = (): TrackingData => {
       // malformed cookie -> ignore
     }
   }
+  const rawVisitorId = (window as { visitorId?: string }).visitorId
+  const visitorId = typeof rawVisitorId === 'string' && rawVisitorId.length < 100 ? rawVisitorId : undefined
   return {
     afsAid,
     utmLink: sessionStorage.getItem('utmLink') ?? undefined,
     source: sessionStorage.getItem('parsedSource') ?? 'TP3-LiveApp',
-    visitorId: (window as { visitorId?: string }).visitorId,
+    visitorId,
     referrerId: readCookie('referrerId'),
   }
 }

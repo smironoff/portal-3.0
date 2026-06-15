@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useForm, FormProvider, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -18,6 +18,7 @@ import { readTracking } from '../tracking'
 const password = z
   .string()
   .min(8, 'Password must be at least 8 characters')
+  .max(128, 'Password is too long')
   .regex(/[a-z]/, 'Include a lowercase letter')
   .regex(/[A-Z]/, 'Include an uppercase letter')
   .regex(/[0-9]/, 'Include a number')
@@ -30,7 +31,7 @@ const schema = z
     countryId: z.number().int().positive('Select your country of residence'),
     agreeToTerms: z.literal(true, { message: 'You must accept the terms' }),
     marketingConsent: z.boolean(),
-    ibCode: z.string(),
+    ibCode: z.string().max(20, 'Introducer code is too long').regex(/^[A-Za-z0-9]*$/, 'Introducer code must be alphanumeric'),
   })
   .refine((v) => v.password === v.confirmPassword, {
     message: 'Passwords do not match',
@@ -40,7 +41,7 @@ type Values = z.infer<typeof schema>
 
 export const RegisterForm = () => {
   const [step, setStep] = useState(0)
-  const tracking = readTracking()
+  const [tracking] = useState(readTracking)
   const methods = useForm<Values>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -52,7 +53,8 @@ export const RegisterForm = () => {
       ibCode: tracking.afsAid ?? '',
     },
   })
-  const countries = filterCountries(useCountries().data ?? [])
+  const { data: countryData } = useCountries()
+  const countries = useMemo(() => filterCountries(countryData ?? []), [countryData])
   const register = useRegister()
   const captcha = useCaptcha()
   const navigate = useNavigate()
@@ -79,7 +81,7 @@ export const RegisterForm = () => {
         source: tracking.source,
         brand: 'ThinkMarkets',
         preferredLanguage: getLanguageId(country, [], 'en'),
-        afsAid: v.ibCode || tracking.afsAid,
+        afsAid: v.ibCode || undefined,
         utmLink: tracking.utmLink,
         visitorId: tracking.visitorId,
         referrerId: tracking.referrerId,

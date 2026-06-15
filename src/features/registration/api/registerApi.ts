@@ -16,7 +16,7 @@ export const createLiveAccount = async (params: RegisterParams): Promise<APIResp
   const item = res.payload?.[0]
   if (item?.status === 'ALREADY_REGISTERED') throw new EmailAlreadyRegisteredError()
   if (!item || item.status !== 'OK') {
-    throw new Error(item?.message ?? `Registration failed: ${item?.status ?? 'empty response'}`)
+    throw new Error(`Registration failed: ${item?.status ?? 'empty response'}`)
   }
   return res
 }

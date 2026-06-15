@@ -1,4 +1,4 @@
-import type { AuthTokens } from '@/api/types'
+import type { AuthTokens, Country as BaseCountry } from '@/api/types'
 
 export interface Organization {
   id: number
@@ -7,13 +7,7 @@ export interface Organization {
   defaultLeverage?: string
 }
 
-export interface Country {
-  id: number
-  name: string
-  code2: string
-  code3: string
-  phoneCode: number
-  european: boolean
+export interface Country extends BaseCountry {
   used?: boolean
   organization: Organization
 }

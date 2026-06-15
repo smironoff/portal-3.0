@@ -40,7 +40,7 @@ describe('createLiveAccount', () => {
   it('throws on a non-OK status', async () => {
     tfboCall.mockResolvedValue({ payload: [{ status: 'SYS_ERR', message: 'boom' }] })
     const { createLiveAccount } = await import('./registerApi')
-    await expect(createLiveAccount(params)).rejects.toThrow('boom')
+    await expect(createLiveAccount(params)).rejects.toThrow('SYS_ERR')
   })
 })
 
