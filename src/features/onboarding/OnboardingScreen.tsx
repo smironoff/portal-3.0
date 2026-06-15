@@ -12,15 +12,25 @@ import { buildUkSteps } from './flows/general/jurisdictions/uk'
 import { JurisdictionNotAvailable } from './flows/JurisdictionNotAvailable'
 import { useQuestionsList } from './flows/simplified/useQuestionsList'
 import { selectFlow } from './flowSelection'
+import { useApplicantCountry } from './hooks/useApplicantCountry'
+import { useUserProfile } from '@/features/auth/api/authQueries'
+import { useIsEmailVerificationRequired, useIsUserVerified } from '@/features/emailVerification/api/emailQueries'
 
 const builders = { AU: buildAuSteps, TMCY: buildTmcySteps, UK: buildUkSteps } as const
 
 const OnboardingComplete = () => {
   const navigate = useNavigate()
+  const { data: profile } = useUserProfile(true)
+  const required = useIsEmailVerificationRequired(profile?.country.id)
+  const verified = useIsUserVerified(profile?.email)
+  if (required.isLoading || verified.isLoading) {
+    return <Typography>Your application is being processed.</Typography>
+  }
+  const needsEmail = required.data === true && verified.data !== true
   return (
     <Stack spacing={2} sx={{ maxWidth: 420 }}>
       <Typography>Your application is being processed. Document verification is the next step.</Typography>
-      <Button onClick={() => navigate({ to: '/account/verify-email' })}>Verify your email</Button>
+      {needsEmail && <Button onClick={() => navigate({ to: '/account/verify-email' })}>Verify your email</Button>}
     </Stack>
   )
 }
@@ -46,7 +56,8 @@ export const OnboardingScreen = () => {
   // Always call hooks unconditionally (rules of hooks).
   // useQuestionsList and useMemo are only consumed in the general branch below.
   const questions = useQuestionsList()
-  const flow = selectFlow(app ?? {})
+  const country = useApplicantCountry()
+  const flow = selectFlow(app ?? {}, country)
   const jurisdiction = flow.kind === 'general' ? flow.jurisdiction : 'AU'
   const steps = useMemo(() => builders[jurisdiction](questions), [jurisdiction, questions])
 
