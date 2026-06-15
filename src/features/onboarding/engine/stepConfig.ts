@@ -11,6 +11,8 @@ export type StepCategory =
   | 'assessment'
   | 'employment'
   | 'income'
+  | 'tax'
+  | 'refer'
 
 export interface StepComponentProps {
   onNext: (patch?: Partial<AppInfo>) => void
