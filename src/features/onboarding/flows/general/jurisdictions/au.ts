@@ -1,7 +1,7 @@
 import type { StepField } from '../../../engine/stepConfig'
 import type { AppInfo, Question } from '../../../api/types'
 import { scoreAssessment } from '../../../engine/scoring'
-import { AU_KOQ_LABELS, AU_PASS_THRESHOLD, EMPLOYED_VALUES } from '../constants'
+import { AU_KOQ_LABELS, AU_PASS_THRESHOLD, EMPLOYED_VALUES, AU_CONTACT_US_LINK } from '../constants'
 import { PersonalInfoStep } from '../../../steps/PersonalInfoStep'
 import { PhoneStep } from '../../../steps/PhoneStep'
 import { PlatformStep } from '../../../steps/PlatformStep'
@@ -14,7 +14,7 @@ import { AnnualIncomeStep } from '../../../steps/AnnualIncomeStep'
 import { SavingsStep } from '../../../steps/SavingsStep'
 import { makeQuestionStep } from '../../../steps/QuestionStep'
 import { useQuestionsList } from '../../simplified/useQuestionsList'
-import { AppFailed } from '../AppFailed'
+import { makeAppFailed } from '../AppFailed'
 
 const isEmployed = (draft: Partial<AppInfo>) =>
   EMPLOYED_VALUES.includes((draft.accountHolderEmploymentStatus as string) ?? '')
@@ -69,6 +69,6 @@ export const buildAuSteps = (questions: Question[]): StepField[] => {
     ...koqSteps,
     ...additionalSteps,
     { fields: ['secondaryConsentAccepted'], component: TermsStep, category: 'terms' as const, isLast: true },
-    { fields: [], component: AppFailed, category: 'assessment' as const, isFailure: true },
+    { fields: [], component: makeAppFailed(AU_CONTACT_US_LINK), category: 'assessment' as const, isFailure: true },
   ]
 }

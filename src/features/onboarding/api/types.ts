@@ -56,6 +56,7 @@ export interface AppInfo {
   accountHolderStateProvince?: string
   accountApplicationQuestionDetails?: QuestionsIDs[]
   appropriatenessLevel?: 'PASS' | 'REFER' | 'FAIL'
+  isReferAcknowledged?: boolean
   // employment / financial
   accountHolderEmploymentStatus?: string
   employmentStatus?: string

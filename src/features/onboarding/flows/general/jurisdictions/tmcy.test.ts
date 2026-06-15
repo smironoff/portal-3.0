@@ -25,4 +25,13 @@ describe('buildTmcySteps', () => {
     expect((await scored.beforeSubmit!({ accountApplicationQuestionDetails: [{ question: 1, answer: 1 }, { question: 2, answer: 4 }] }, questions)).appropriatenessLevel).toBe('REFER') // 5+10=15
     expect((await scored.beforeSubmit!({ accountApplicationQuestionDetails: [{ question: 1, answer: 1 }, { question: 2, answer: 3 }] }, questions)).appropriatenessLevel).toBe('FAIL') // 5+5=10
   })
+
+  it('scoring beforeSubmit throws when a required answer is missing', async () => {
+    const steps = buildTmcySteps(questions)
+    const scored = steps.find((s) => s.requiredQuestions?.includes('describeHighVolatility'))!
+    // Only sourceWealth is answered; describeHighVolatility (also a required label present in questions) is missing.
+    await expect(
+      (async () => scored.beforeSubmit!({ accountApplicationQuestionDetails: [{ question: 1, answer: 1 }] }, questions))()
+    ).rejects.toThrow('All assessment questions must be answered before scoring')
+  })
 })

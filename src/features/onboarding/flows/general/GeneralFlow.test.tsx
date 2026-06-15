@@ -33,6 +33,17 @@ describe('GeneralFlow', () => {
     expect(await screen.findByText('FAILURE PAGE')).toBeInTheDocument()
   })
 
+  it('renders the failure step immediately when the hydrated draft already carries a FAIL', async () => {
+    useOnboardingStore.getState().hydrate({ appropriatenessLevel: 'FAIL' })
+    const steps: StepField[] = [
+      { fields: [], component: Ok, category: 'assessment', isLast: true },
+      { fields: [], component: Fail, category: 'assessment', isFailure: true },
+    ]
+    const { GeneralFlow } = await import('./GeneralFlow')
+    render(<GeneralFlow steps={steps} applicationId={1} questions={[]} />, { wrapper })
+    expect(await screen.findByText('FAILURE PAGE')).toBeInTheDocument()
+  })
+
   it('renders the failure step when a step passes appropriatenessLevel FAIL via onNext', async () => {
     const Cancel = ({ onNext }: StepComponentProps) => (
       <button onClick={() => onNext({ appropriatenessLevel: 'FAIL' })}>Cancel</button>

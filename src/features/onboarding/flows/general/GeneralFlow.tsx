@@ -30,6 +30,12 @@ export const GeneralFlow = ({
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
+    if (useOnboardingStore.getState().draft.appropriatenessLevel === 'FAIL') {
+      // Guard a hydrated terminal draft: surface the failure view before any step resolution.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setFailed(true)
+      return
+    }
     const nonFailureSteps = steps.filter((s) => !s.isFailure)
     const computed = getStartingStep(nonFailureSteps, -1, useOnboardingStore.getState().draft, questions)
     const targetStep = nonFailureSteps[computed]

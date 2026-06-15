@@ -3,7 +3,8 @@ import { AU_CONTACT_US_LINK } from './constants'
 import type { StepComponentProps } from '../../engine/stepConfig'
 
 // Shown when the appropriateness assessment fails or a terminal status is returned.
-export const AppFailed = (_props: StepComponentProps) => (
+// Factory so each jurisdiction can supply its own support contact link.
+export const makeAppFailed = (contactLink: string) => (_props: StepComponentProps) => (
   <Stack spacing={2} sx={{ maxWidth: 480 }}>
     <Typography variant="h5">We are unable to open your account</Typography>
     <Typography>
@@ -12,10 +13,13 @@ export const AppFailed = (_props: StepComponentProps) => (
     </Typography>
     <Typography>
       If you believe this is incorrect, please{' '}
-      <Link href={AU_CONTACT_US_LINK} target="_blank" rel="noopener noreferrer">
+      <Link href={contactLink} target="_blank" rel="noopener noreferrer">
         contact our support team
       </Link>
       .
     </Typography>
   </Stack>
 )
+
+// Backward-compatible default export for callers that still import AppFailed directly.
+export const AppFailed = makeAppFailed(AU_CONTACT_US_LINK)

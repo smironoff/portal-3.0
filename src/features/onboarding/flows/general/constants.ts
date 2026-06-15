@@ -56,6 +56,7 @@ export const AU_SOURCE_OF_FUNDS_OPTIONS = [
 ]
 
 export const AU_CONTACT_US_LINK = 'https://www.thinkmarkets.com/au/support/contact-us/'
+export const TMCY_CONTACT_US_LINK = 'https://www.thinkmarkets.com/eu/support/contact-us/' // TODO confirm exact CY/EU support URL with compliance
 
 export const TMCY = {
   sourceWealth: 'sourceWealth',

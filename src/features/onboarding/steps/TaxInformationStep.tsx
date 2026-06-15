@@ -8,7 +8,7 @@ import type { StepComponentProps } from '../engine/stepConfig'
 
 const schema = z.object({
   taxIdentificationNumber: z.string().min(1, 'Tax ID is required'),
-  accountHolderNationality: z.number().int().positive('Nationality is required'),
+  accountHolderNationality: z.number().int().min(1).max(999, 'Invalid country code'),
 })
 type Values = z.infer<typeof schema>
 
@@ -29,6 +29,8 @@ export const TaxInformationStep = ({ onNext, onBack, canGoBack }: StepComponentP
   const submit = handleSubmit((v) => {
     patch({
       taxIdentificationNumber: v.taxIdentificationNumber,
+      // Mirrors legacy behaviour where the TIN is copied into accountHolderIdNumber.
+      // Pending data-team confirmation; behaviour intentionally unchanged here.
       accountHolderIdNumber: v.taxIdentificationNumber,
       accountHolderNationality: v.accountHolderNationality,
     })

@@ -8,7 +8,7 @@ describe('ReferStep', () => {
     const onNext = vi.fn()
     render(<ReferStep onNext={onNext} canGoBack={false} />)
     await userEvent.click(screen.getByRole('button', { name: /i understand, proceed/i }))
-    expect(onNext).toHaveBeenCalledWith({ appropriatenessLevel: 'REFER' })
+    expect(onNext).toHaveBeenCalledWith({ appropriatenessLevel: 'REFER', isReferAcknowledged: true })
   })
   it('cancel proceeds as FAIL', async () => {
     const onNext = vi.fn()
