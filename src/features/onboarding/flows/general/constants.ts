@@ -91,3 +91,21 @@ export const TMCY_QUESTION_LABELS: string[] = [
 
 export const TMCY_PASS_THRESHOLD = 21
 export const TMCY_REFER_THRESHOLD = 11
+
+export const UK = {
+  forexExperience: 'forexExperience',
+  sharesFundsExperience: 'sharesFundsExperience',
+  futuresOptionsExperience: 'futuresOptionsExperience',
+  personalProfit: 'personalProfit',
+  useLeverage: 'useLeverage',
+  unwantedMarketMovements: 'unwantedMarketMovements',
+  appleUseLeverage: 'appleUseLeverage',
+  UKDepositLoss: 'UKDepositLoss',
+} as const
+
+export const UK_FOREX_PASS_ANSWERS = ['moreThan60Trades', 'between11and60Trades', 'between1and10Trades']
+export const UK_SHARES_EXPERIENCE_ANSWERS = ['moreThan60Trades', 'between11and60Trades', 'lessThan10Trades']
+export const UK_DEPOSIT_LOSS_PASS_ANSWERS = ['UKDepositLoss1', 'UKDepositLoss2']
+export const UK_REFER_THRESHOLD_WITH_SHARES = 0
+export const UK_REFER_THRESHOLD_WITHOUT_SHARES = 1
+export const UK_CONTACT_US_LINK = 'https://www.thinkmarkets.com/en/support/contact-us/' // TODO confirm exact UK support URL with compliance
