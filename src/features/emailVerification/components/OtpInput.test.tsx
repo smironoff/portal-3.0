@@ -45,4 +45,20 @@ describe('OtpInput', () => {
     // only two digits remain; onComplete must NOT be called with a 6-char value built from stale tail
     expect((screen.getByLabelText('Digit 3') as HTMLInputElement).value).toBe('')
   })
+
+  it('clears a filled field on backspace and moves focus back when empty', async () => {
+    const onComplete = vi.fn()
+    render(<OtpInput onComplete={onComplete} />)
+    const d1 = screen.getByLabelText('Digit 1') as HTMLInputElement
+    const d2 = screen.getByLabelText('Digit 2') as HTMLInputElement
+    await userEvent.type(d1, '1')
+    await userEvent.type(d2, '2')
+    // backspace on filled field clears it in place
+    d2.focus()
+    await userEvent.keyboard('{Backspace}')
+    expect(d2.value).toBe('')
+    // backspace again on the now-empty field moves focus to the previous field
+    await userEvent.keyboard('{Backspace}')
+    expect(d1).toHaveFocus()
+  })
 })
