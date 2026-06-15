@@ -49,11 +49,23 @@ describe('EmailVerificationScreen', () => {
     expect(sendMutate).not.toHaveBeenCalled()
   })
 
-  it('does not send OTP while the verified-check is still loading (data: undefined)', async () => {
+  it('sends OTP when verified-check has settled with an error (data: undefined, isLoading: false)', async () => {
     isUserVerifiedData.value = undefined
     isUserVerifiedData.isLoading = false
     const { EmailVerificationScreen } = await import('./EmailVerificationScreen')
     render(<EmailVerificationScreen />)
+    expect(sendMutate).toHaveBeenCalledWith({
+      originCountry: 1, accountHolderFirstName: 'Ann', accountHolderLastName: 'Lee',
+      preferredLanguage: 1, accountHolderEmail: 'a@b.com',
+    })
+  })
+
+  it('does not send OTP while the verified-check is still loading', async () => {
+    isUserVerifiedData.value = undefined
+    isUserVerifiedData.isLoading = true
+    const { EmailVerificationScreen } = await import('./EmailVerificationScreen')
+    render(<EmailVerificationScreen />)
     expect(sendMutate).not.toHaveBeenCalled()
+    expect(screen.getByText('Loading...')).toBeInTheDocument()
   })
 })

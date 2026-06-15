@@ -30,12 +30,12 @@ export const EmailVerificationScreen = () => {
 
   useEffect(() => {
     const params = sendParams()
-    if (params && !sent.current && alreadyVerified.data === false) {
+    if (params && !sent.current && !alreadyVerified.isLoading && alreadyVerified.data !== true) {
       sent.current = true
       send.mutate(params)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile, alreadyVerified.data])
+  }, [profile, alreadyVerified.data, alreadyVerified.isLoading])
 
   if (!profile) return <Typography>Loading...</Typography>
 
