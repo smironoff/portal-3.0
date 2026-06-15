@@ -58,10 +58,10 @@ export const buildUkSteps = (questions: Question[]): StepField[] => {
       requiredQuestions: [UK.forexExperience],
       component: makeQuestionStep(UK.forexExperience, useQuestionsList),
       category: 'experience',
-      beforeSubmit: (draft: Partial<AppInfo>) => ({
-        ...draft,
-        appropriatenessLevel: forexAutoPass(getUserAnswers(questions, draft.accountApplicationQuestionDetails ?? [])),
-      }),
+      beforeSubmit: (draft: Partial<AppInfo>) => {
+        const level = forexAutoPass(getUserAnswers(questions, draft.accountApplicationQuestionDetails ?? []))
+        return level !== undefined ? { ...draft, appropriatenessLevel: level } : draft
+      },
     },
     assessment(UK.futuresOptionsExperience),
     assessment(UK.sharesFundsExperience),
