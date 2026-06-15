@@ -9,6 +9,8 @@ export type StepCategory =
   | 'address'
   | 'experience'
   | 'assessment'
+  | 'employment'
+  | 'income'
 
 export interface StepComponentProps {
   onNext: () => void
@@ -24,5 +26,6 @@ export interface StepField {
   shouldDisplay?: (draft: Partial<AppInfo>) => boolean
   beforeSubmit?: (draft: Partial<AppInfo>, questions: Question[]) => Promise<Partial<AppInfo>> | Partial<AppInfo>
   isLast?: boolean
+  isFailure?: boolean
   canGoBack?: boolean
 }
