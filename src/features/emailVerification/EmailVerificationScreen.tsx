@@ -30,7 +30,7 @@ export const EmailVerificationScreen = () => {
 
   useEffect(() => {
     const params = sendParams()
-    if (params && !sent.current && alreadyVerified.data !== true) {
+    if (params && !sent.current && alreadyVerified.data === false) {
       sent.current = true
       send.mutate(params)
     }
@@ -47,6 +47,8 @@ export const EmailVerificationScreen = () => {
       </Stack>
     )
   }
+
+  if (alreadyVerified.isLoading) return <Typography>Loading...</Typography>
 
   const onComplete = async (otp: string) => {
     try {

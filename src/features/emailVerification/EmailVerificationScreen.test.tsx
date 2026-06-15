@@ -6,19 +6,20 @@ const sendMutate = vi.fn()
 const verifyMutateAsync = vi.fn()
 const profile = { id: 1, firstName: 'Ann', lastName: 'Lee', email: 'a@b.com', country: { id: 1 } }
 
-const isUserVerifiedData = vi.hoisted(() => ({ value: false }))
+const isUserVerifiedData = vi.hoisted(() => ({ value: false as boolean | undefined, isLoading: false }))
 
 vi.mock('@/features/auth/api/authQueries', () => ({ useUserProfile: () => ({ data: profile }) }))
 vi.mock('./api/emailQueries', () => ({
   useSendOtp: () => ({ mutate: sendMutate, isPending: false, isError: false, data: undefined }),
   useVerifyOtp: () => ({ mutateAsync: verifyMutateAsync }),
-  useIsUserVerified: () => ({ data: isUserVerifiedData.value }),
+  useIsUserVerified: () => ({ data: isUserVerifiedData.value, isLoading: isUserVerifiedData.isLoading }),
 }))
 
 beforeEach(() => {
   sendMutate.mockReset()
   verifyMutateAsync.mockReset()
   isUserVerifiedData.value = false
+  isUserVerifiedData.isLoading = false
 })
 
 describe('EmailVerificationScreen', () => {
@@ -45,6 +46,14 @@ describe('EmailVerificationScreen', () => {
     const { EmailVerificationScreen } = await import('./EmailVerificationScreen')
     render(<EmailVerificationScreen />)
     expect(await screen.findByText(/email verified/i)).toBeInTheDocument()
+    expect(sendMutate).not.toHaveBeenCalled()
+  })
+
+  it('does not send OTP while the verified-check is still loading (data: undefined)', async () => {
+    isUserVerifiedData.value = undefined
+    isUserVerifiedData.isLoading = false
+    const { EmailVerificationScreen } = await import('./EmailVerificationScreen')
+    render(<EmailVerificationScreen />)
     expect(sendMutate).not.toHaveBeenCalled()
   })
 })
