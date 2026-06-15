@@ -7,7 +7,8 @@ export interface TrackingData {
 }
 
 const readCookie = (name: string): string | undefined => {
-  const match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'))
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const match = document.cookie.match(new RegExp('(?:^|; )' + escaped + '=([^;]*)'))
   return match?.[1] ? decodeURIComponent(match[1]) : undefined
 }
 

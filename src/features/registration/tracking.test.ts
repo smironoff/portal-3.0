@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { readTracking } from './tracking'
 
 describe('readTracking', () => {
@@ -8,10 +8,6 @@ describe('readTracking', () => {
     document.cookie = 'referrerId=; expires=Thu, 01 Jan 1970 00:00:00 GMT'
     delete (window as { visitorId?: string }).visitorId
   })
-  afterEach(() => {
-    sessionStorage.clear()
-  })
-
   it('defaults source and leaves optional fields undefined', () => {
     const t = readTracking()
     expect(t.source).toBe('TP3-LiveApp')
@@ -37,6 +33,11 @@ describe('readTracking', () => {
 
   it('ignores a malformed ibc cookie', () => {
     document.cookie = 'ibc=not-json'
+    expect(readTracking().afsAid).toBeUndefined()
+  })
+
+  it('ignores an ibc cookie with no pid', () => {
+    document.cookie = `ibc=${encodeURIComponent(JSON.stringify({ type: 'retail' }))}`
     expect(readTracking().afsAid).toBeUndefined()
   })
 })
