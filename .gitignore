@@ -30,3 +30,6 @@ playwright-report
 *.njsproj
 *.sln
 *.sw?
+
+# Agent worktrees (harness-managed, never commit)
+.claude/worktrees/

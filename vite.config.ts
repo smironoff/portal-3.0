@@ -88,7 +88,7 @@ function devProxy() {
 }
 
 // https://vite.dev/config/
-export default defineConfig(({ command }) => ({
+export default defineConfig(({ command, mode }) => ({
   plugins: [react()],
   resolve: {
     alias: { '@': path.resolve(__dirname, 'src') },
@@ -98,7 +98,9 @@ export default defineConfig(({ command }) => ({
       ? {
           host: DEV_HOST,
           port: 443,
-          https: readDevHttps(),
+          // `--mode test` (Playwright e2e) runs plain HTTP on a non-privileged
+          // port so the suite never depends on local .certs being present.
+          https: mode === 'test' ? undefined : readDevHttps(),
           proxy: devProxy(),
         }
       : { port: 3000 },
