@@ -7,7 +7,7 @@ test('live registration creates an account and lands in onboarding', async ({ pa
     const ok = (result: unknown) =>
       route.fulfill({ json: { id: 1, session_id: 's', token: 't', payload: [{ module: 'application', action, status: 'OK', result }] } })
     if (action === 'getCountries')
-      return ok([{ id: 1, name: 'Australia', code2: 'AU', code3: 'AUS', phoneCode: 61, european: false, organization: { id: 7, name: 'AU' } }])
+      return ok([{ id: 1, name: 'Australia', code2: 'AU', code3: 'AUS', phoneCode: 61, european: false, organization: { id: 7, name: 'AU' }, isSimplifyOnboarding: false }])
     if (action === 'incremental_submit') return ok({ applicationId: 9, applicationStatus: 'INCOMPLETE' })
     // Omit portalAccountDomain so the loaded app uses the simplified flow, whose first
     // step is "Personal information" (mirrors the proven auth.spec.ts pattern). This e2e
@@ -15,6 +15,10 @@ test('live registration creates an account and lands in onboarding', async ({ pa
     if (action === 'getLastApplicationsInfo') return ok([{ applicationId: 9, status: 'INCOMPLETE' }])
     if (action === 'getQuestions') return ok([])
     if (action === 'get_user') return ok({ id: 1, email: 'a@b.com', firstName: 'Ann', lastName: 'Lee', country: { id: 1 }, additionalAttributes: {} })
+    // This spec ends at the INCOMPLETE onboarding flow, so the email-status endpoints
+    // are not reached. Provide harmless branches in case country resolution triggers them.
+    if (action === 'isemail_verification_required') return ok(true)
+    if (action === 'isuserverified') return ok(false)
     return ok({})
   })
 

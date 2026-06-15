@@ -29,6 +29,7 @@ test('completed onboarding leads to a successful email verification', async ({ p
           phoneCode: 61,
           european: false,
           organization: { id: 7, name: 'AU' },
+          isSimplifyOnboarding: false,
         },
       ])
     if (action === 'incremental_submit') return ok({ applicationId: 9, applicationStatus: 'INCOMPLETE' })
@@ -44,6 +45,11 @@ test('completed onboarding leads to a successful email verification', async ({ p
         additionalAttributes: {},
       })
     if (action === 'getQuestions') return ok([])
+    // Gate on the completion screen: required === true && verified !== true.
+    // isuserverified must stay false throughout so the verify screen sends the OTP
+    // and renders the form rather than the already-verified confirmation on mount.
+    if (action === 'isemail_verification_required') return ok(true)
+    if (action === 'isuserverified') return ok(false)
     if (action === 'send_verification_code') return ok(true)
     if (action === 'verify_otp_code') return ok(true)
     return ok({})
