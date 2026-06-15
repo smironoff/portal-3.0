@@ -59,7 +59,7 @@ export const OnboardingScreen = () => {
 
   if (flow.kind === 'general') {
     if (questions.length === 0) return <Typography>Loading questions...</Typography>
-    return <GeneralFlow steps={auSteps} applicationId={app.applicationId} />
+    return <GeneralFlow steps={auSteps} applicationId={app.applicationId} questions={questions} />
   }
 
   if (flow.kind === 'unsupported') {

@@ -15,7 +15,9 @@ export const SourceOfFundsStep = ({ onNext, onBack, canGoBack }: StepComponentPr
   const patch = useOnboardingStore((s) => s.patch)
   const { control, handleSubmit } = useForm<Values>({
     resolver: zodResolver(schema),
-    defaultValues: { sourceOfFunds: draft.sourceOfFunds ?? AU_SOURCE_OF_FUNDS_OPTIONS[0]!.value },
+    // Force an explicit selection: auto-selecting a source of funds would
+    // silently record an unverified AML attribute for a regulated check.
+    defaultValues: { sourceOfFunds: draft.sourceOfFunds ?? '' },
   })
   const submit = handleSubmit((v) => {
     patch({ sourceOfFunds: v.sourceOfFunds })
@@ -26,8 +28,17 @@ export const SourceOfFundsStep = ({ onNext, onBack, canGoBack }: StepComponentPr
       <Controller
         name="sourceOfFunds"
         control={control}
-        render={({ field }) => (
-          <TextField select label="Source of funds" {...field}>
+        render={({ field, fieldState }) => (
+          <TextField
+            select
+            label="Source of funds"
+            error={!!fieldState.error}
+            helperText={fieldState.error?.message}
+            {...field}
+          >
+            <MenuItem value="" disabled>
+              Select...
+            </MenuItem>
             {AU_SOURCE_OF_FUNDS_OPTIONS.map((o) => (
               <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>
             ))}

@@ -28,7 +28,7 @@ describe('GeneralFlow', () => {
       { fields: [], component: Fail, category: 'assessment', isFailure: true },
     ]
     const { GeneralFlow } = await import('./GeneralFlow')
-    render(<GeneralFlow steps={steps} applicationId={1} />, { wrapper })
+    render(<GeneralFlow steps={steps} applicationId={1} questions={[]} />, { wrapper })
     await userEvent.click(screen.getByRole('button', { name: /continue/i }))
     expect(await screen.findByText('FAILURE PAGE')).toBeInTheDocument()
   })

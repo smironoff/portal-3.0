@@ -30,6 +30,12 @@ export const buildAuSteps = (questions: Question[]): StepField[] => {
     category: 'assessment' as const,
   }))
 
+  // When the backend returns zero additional (non-mandatory) questions, `additional`
+  // is empty and no scoring `beforeSubmit` is attached, so `appropriatenessLevel`
+  // stays unset. This matches the legacy `completeGeneral`, which defaults the level
+  // to PASS server-side / on submit rather than failing closed. We deliberately do
+  // NOT invent a FAIL-closed policy here; confirming the backend default remains a
+  // follow-up.
   const additionalSteps: StepField[] = additional.map((q, idx) => ({
     fields: [],
     requiredQuestions: [q.label],

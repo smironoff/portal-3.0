@@ -14,6 +14,15 @@ describe('buildAuSteps', () => {
     expect(steps.some((s) => s.isFailure)).toBe(true)
   })
 
+  it('with no additional questions, still yields an isLast terms step and an isFailure step', () => {
+    // No scoring beforeSubmit is attached (appropriatenessLevel stays unset),
+    // matching legacy completeGeneral; the flow itself remains valid.
+    const steps = buildAuSteps([])
+    expect(steps.some((s) => s.isLast)).toBe(true)
+    expect(steps.some((s) => s.isFailure)).toBe(true)
+    expect(steps.some((s) => s.beforeSubmit)).toBe(false)
+  })
+
   it('the last additional question carries a scoring beforeSubmit (PASS at >= 8)', async () => {
     const steps = buildAuSteps(additional)
     const scored = [...steps].reverse().find((s) => s.beforeSubmit)
