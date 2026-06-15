@@ -48,7 +48,6 @@ export const RegisterForm = () => {
       password: '',
       confirmPassword: '',
       countryId: 0,
-      agreeToTerms: false as unknown as true,
       marketingConsent: false,
       ibCode: tracking.afsAid ?? '',
     },
@@ -120,6 +119,7 @@ export const RegisterForm = () => {
                 render={({ field, fieldState }) => (
                   <TextField
                     select
+                    id="countryId"
                     label="Country of residence"
                     value={field.value || ''}
                     onChange={(e) => field.onChange(Number(e.target.value))}
@@ -134,13 +134,21 @@ export const RegisterForm = () => {
               />
               <RHFTextField name="ibCode" label="Introducer code (optional)" />
               {/* C-2 pre-production compliance blocker: link to the real T&C / Client Agreement / KID documents once compliance supplies them. */}
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    onChange={(e) => methods.setValue('agreeToTerms', e.target.checked as true, { shouldValidate: true })}
+              <Controller
+                control={methods.control}
+                name="agreeToTerms"
+                render={({ field }) => (
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={field.value === true}
+                        onChange={(e) => field.onChange(e.target.checked)}
+                        onBlur={field.onBlur}
+                      />
+                    }
+                    label="I agree to the Terms and Conditions"
                   />
-                }
-                label="I agree to the Terms and Conditions"
+                )}
               />
               {methods.formState.errors.agreeToTerms && (
                 <Box sx={{ color: 'error.main', fontSize: 12 }}>{methods.formState.errors.agreeToTerms.message}</Box>

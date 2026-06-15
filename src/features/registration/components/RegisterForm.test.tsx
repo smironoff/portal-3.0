@@ -84,5 +84,7 @@ describe('RegisterForm', () => {
     await userEvent.click(screen.getByLabelText(/i agree/i))
     await userEvent.click(screen.getByRole('button', { name: /create account/i }))
     expect(await screen.findByText(/already registered/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /create account/i })).not.toBeInTheDocument()
   })
 })
