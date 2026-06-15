@@ -108,7 +108,7 @@ export default defineConfig(({ command, mode }) => ({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['src/test/setup.ts'],
-    exclude: ['e2e/**', 'node_modules/**'],
+    exclude: ['e2e/**', 'node_modules/**', '.claude/**'],
     server: {
       deps: {
         inline: ['@mui/material', '@mui/system', '@mui/utils', 'react-transition-group'],
