@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { resolveLandingRoute } from '@/features/auth/landing'
 
 const sendMutate = vi.fn()
 const verifyMutateAsync = vi.fn()
@@ -36,6 +37,6 @@ describe('EmailVerificationScreen', () => {
     render(<EmailVerificationScreen />)
     for (let i = 1; i <= 6; i++) await userEvent.type(screen.getByLabelText(`Digit ${i}`), String(i))
     expect(verifyMutateAsync).toHaveBeenCalledWith({ otp: '123456', email: 'a@b.com' })
-    await vi.waitFor(() => expect(navigate).toHaveBeenCalledWith({ to: '/onboarding' }))
+    await vi.waitFor(() => expect(navigate).toHaveBeenCalledWith({ to: resolveLandingRoute(profile as never) }))
   })
 })

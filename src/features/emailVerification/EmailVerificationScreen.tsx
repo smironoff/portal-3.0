@@ -40,12 +40,16 @@ export const EmailVerificationScreen = () => {
   if (!profile) return <Typography>Loading...</Typography>
 
   const onComplete = async (otp: string) => {
-    const ok = await verify.mutateAsync({ otp, email: profile.email }).catch(() => false)
-    if (ok) {
-      notify({ severity: 'success', message: 'Email verified' })
-      navigate({ to: resolveLandingRoute(profile) })
-    } else {
-      notify({ severity: 'error', message: 'Invalid or expired code' })
+    try {
+      const ok = await verify.mutateAsync({ otp, email: profile.email })
+      if (ok) {
+        notify({ severity: 'success', message: 'Email verified' })
+        navigate({ to: resolveLandingRoute(profile) })
+      } else {
+        notify({ severity: 'error', message: 'Invalid or expired code' })
+      }
+    } catch {
+      notify({ severity: 'error', message: 'Something went wrong. Please try again.' })
     }
   }
 
