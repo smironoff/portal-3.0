@@ -24,6 +24,11 @@ export const OtpInput = ({ length = 6, onComplete }: Props) => {
 
   const handleChange = (i: number, raw: string) => {
     const digit = raw.replace(/\D/g, '').slice(-1)
+    if (raw && !digit) {
+      const el = refs.current[i]
+      if (el) el.value = values.current[i]
+      return
+    }
     setAt(i, digit)
     if (digit && i < length - 1) refs.current[i + 1]?.focus()
     emit()
@@ -33,13 +38,15 @@ export const OtpInput = ({ length = 6, onComplete }: Props) => {
     const digits = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, length)
     if (!digits) return
     e.preventDefault()
-    digits.split('').forEach((d, k) => setAt(k, d))
+    for (let k = 0; k < length; k++) setAt(k, digits[k] ?? '')
     refs.current[Math.min(digits.length, length - 1)]?.focus()
     emit()
   }
 
   const handleKeyDown = (i: number, e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Backspace' && !values.current[i] && i > 0) refs.current[i - 1]?.focus()
+    if (e.key !== 'Backspace') return
+    if (values.current[i]) { setAt(i, ''); return }
+    if (i > 0) refs.current[i - 1]?.focus()
   }
 
   return (

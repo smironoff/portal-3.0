@@ -24,4 +24,25 @@ describe('OtpInput', () => {
     await userEvent.paste('987654')
     expect(onComplete).toHaveBeenCalledWith('987654')
   })
+
+  it('ignores non-digit input', async () => {
+    const onComplete = vi.fn()
+    render(<OtpInput onComplete={onComplete} />)
+    const first = screen.getByLabelText('Digit 1')
+    await userEvent.type(first, 'a')
+    expect((first as HTMLInputElement).value).toBe('')
+  })
+
+  it('clears trailing fields when a shorter code is pasted over a full one', async () => {
+    const onComplete = vi.fn()
+    render(<OtpInput onComplete={onComplete} />)
+    const first = screen.getByLabelText('Digit 1')
+    first.focus()
+    await userEvent.paste('123456')
+    expect(onComplete).toHaveBeenLastCalledWith('123456')
+    first.focus()
+    await userEvent.paste('99')
+    // only two digits remain; onComplete must NOT be called with a 6-char value built from stale tail
+    expect((screen.getByLabelText('Digit 3') as HTMLInputElement).value).toBe('')
+  })
 })
