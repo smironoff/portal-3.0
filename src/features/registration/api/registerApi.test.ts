@@ -1,4 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import type { APIResponse } from '@/api/envelope'
+import type { RegisterResponse } from '../types'
 
 const tfboCall = vi.fn()
 const setTfbo = vi.fn()
@@ -45,17 +47,22 @@ describe('createLiveAccount', () => {
 describe('storeRegistrationAuth', () => {
   it('stores the envelope tfbo session and any OAuth tokens', async () => {
     const { storeRegistrationAuth } = await import('./registerApi')
-    storeRegistrationAuth({
-      session_id: 's', token: 't',
-      payload: [{ status: 'OK', result: { tokens: { accessToken: 'a', refreshToken: 'r', refreshTokenValidUntil: '2030' } } }],
-    } as never)
+    const res1: APIResponse<RegisterResponse> = {
+      id: 1, session_id: 's', token: 't',
+      payload: [{ module: 'application', action: 'incremental_submit', status: 'OK', result: { tokens: { accessToken: 'a', refreshToken: 'r', refreshTokenValidUntil: '2030' } } }],
+    }
+    storeRegistrationAuth(res1)
     expect(setTfbo).toHaveBeenCalledWith('s', 't')
     expect(setAuthTokens).toHaveBeenCalledWith({ accessToken: 'a', refreshToken: 'r', refreshTokenValidUntil: '2030' })
   })
 
   it('stores only the tfbo session when no OAuth tokens are returned', async () => {
     const { storeRegistrationAuth } = await import('./registerApi')
-    storeRegistrationAuth({ session_id: 's', token: 't', payload: [{ status: 'OK', result: {} }] } as never)
+    const res2: APIResponse<RegisterResponse> = {
+      id: 1, session_id: 's', token: 't',
+      payload: [{ module: 'application', action: 'incremental_submit', status: 'OK', result: {} }],
+    }
+    storeRegistrationAuth(res2)
     expect(setTfbo).toHaveBeenCalledWith('s', 't')
     expect(setAuthTokens).not.toHaveBeenCalled()
   })
