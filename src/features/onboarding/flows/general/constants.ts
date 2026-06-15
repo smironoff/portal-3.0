@@ -106,6 +106,9 @@ export const UK = {
 export const UK_FOREX_PASS_ANSWERS = ['moreThan60Trades', 'between11and60Trades', 'between1and10Trades']
 export const UK_SHARES_EXPERIENCE_ANSWERS = ['moreThan60Trades', 'between11and60Trades', 'lessThan10Trades']
 export const UK_DEPOSIT_LOSS_PASS_ANSWERS = ['UKDepositLoss1', 'UKDepositLoss2']
+// Score > threshold -> REFER (else FAIL). Values ported verbatim from the legacy
+// UK flow (UK_APPR_TEST_REFER_THRESHOLD_WITH/WITHOUT_SHARES). TODO(compliance): confirm
+// these thresholds against the current FCA appropriateness specification.
 export const UK_REFER_THRESHOLD_WITH_SHARES = 0
 export const UK_REFER_THRESHOLD_WITHOUT_SHARES = 1
 export const UK_CONTACT_US_LINK = 'https://www.thinkmarkets.com/en/support/contact-us/' // TODO confirm exact UK support URL with compliance

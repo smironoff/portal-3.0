@@ -23,6 +23,9 @@ export const forexAutoPass = (answers: Answers): Level | undefined => {
     : undefined
 }
 
+// NOTE: `futuresOptionsExperience` is asked on the no-forex path but is NOT summed
+// into the score — this matches the legacy UK flow (collected for the audit trail, not
+// scored). TODO(compliance): confirm it is intentionally audit-only and not a scoring input.
 export const computeUkLevel = (answers: Answers): Level => {
   const forex = answers[UK.forexExperience]?.answerLabel
   let level: Level = 'FAIL'
