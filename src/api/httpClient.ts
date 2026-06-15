@@ -20,6 +20,7 @@ interface TfboRequest {
 export interface HttpClient {
   request: <T>(url: string, method: string, auth: Authorize, data?: unknown) => Promise<T>
   tfbo: <T>(data: TfboRequest, auth?: Authorize) => Promise<APIResponse<T>>
+  tfboCall: <T>(module: string, action: string, parameters?: object, auth?: Authorize) => Promise<APIResponse<T>>
   auth: <T>(
     path: string,
     method: string,
@@ -90,5 +91,8 @@ export const createHttpClient = (config: AppConfig, authClient: AuthClient): Htt
     return res
   }
 
-  return { request, tfbo, auth: authRequest }
+  const tfboCall = <T>(module: string, action: string, parameters?: object, authMode: Authorize = Authorize.Yes) =>
+    tfbo<T>({ payload: [{ module, action, parameters }] }, authMode)
+
+  return { request, tfbo, tfboCall, auth: authRequest }
 }

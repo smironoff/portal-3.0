@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { createHttpClient } from './httpClient'
+import { createHttpClient, Authorize } from './httpClient'
 import { createAuthClient } from './authClient'
 import { tokenStore } from './tokenStore'
 import type { AppConfig } from '@/config/schema'
@@ -64,5 +64,19 @@ describe('httpClient.tfbo', () => {
     )
     expect(expired).toHaveBeenCalled()
     window.removeEventListener('TokenExpired', expired)
+  })
+
+  it('tfboCall posts a module/action/parameters envelope', async () => {
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({ id: 1, session_id: 's', token: 't', payload: [{ module: 'application', action: 'getQuestions', status: 'OK', result: [] }] }),
+    }))
+    vi.stubGlobal('fetch', fetchMock)
+    const auth = createAuthClient(cfg)
+    const http = createHttpClient(cfg, auth)
+    await http.tfboCall('application', 'getQuestions', { orgId: 5 }, Authorize.No)
+    const call = fetchMock.mock.calls[0] as unknown as [string, { body: string }]
+    const body = JSON.parse(call[1].body)
+    expect(body.payload[0]).toMatchObject({ module: 'application', action: 'getQuestions', parameters: { orgId: 5 } })
   })
 })
