@@ -6,9 +6,12 @@ import { useOnboardingStore } from './state/onboardingStore'
 import { SimplifiedFlow } from './flows/simplified/SimplifiedFlow'
 import { GeneralFlow } from './flows/general/GeneralFlow'
 import { buildAuSteps } from './flows/general/jurisdictions/au'
+import { buildTmcySteps } from './flows/general/jurisdictions/tmcy'
 import { JurisdictionNotAvailable } from './flows/JurisdictionNotAvailable'
 import { useQuestionsList } from './flows/simplified/useQuestionsList'
 import { selectFlow } from './flowSelection'
+
+const builders = { AU: buildAuSteps, TMCY: buildTmcySteps } as const
 
 const Level1Done = ({ applicationId }: { applicationId?: number }) => {
   const [go, setGo] = useState(false)
@@ -31,7 +34,9 @@ export const OnboardingScreen = () => {
   // Always call hooks unconditionally (rules of hooks).
   // useQuestionsList and useMemo are only consumed in the general branch below.
   const questions = useQuestionsList()
-  const auSteps = useMemo(() => buildAuSteps(questions), [questions])
+  const flow = selectFlow(app ?? {})
+  const jurisdiction = flow.kind === 'general' ? flow.jurisdiction : 'AU'
+  const steps = useMemo(() => builders[jurisdiction](questions), [jurisdiction, questions])
 
   useEffect(() => {
     // Hydrate only on the first load of the application so a refetch does not
@@ -55,11 +60,9 @@ export const OnboardingScreen = () => {
     return <Typography>Your application is being processed. Document verification is the next step.</Typography>
   }
 
-  const flow = selectFlow(app)
-
   if (flow.kind === 'general') {
     if (questions.length === 0) return <Typography>Loading questions...</Typography>
-    return <GeneralFlow steps={auSteps} applicationId={app.applicationId} questions={questions} />
+    return <GeneralFlow steps={steps} applicationId={app.applicationId} questions={questions} />
   }
 
   if (flow.kind === 'unsupported') {
