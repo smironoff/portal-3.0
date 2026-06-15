@@ -48,9 +48,11 @@ export const GeneralFlow = ({ steps, applicationId }: { steps: StepField[]; appl
       let app: Partial<AppInfo> = { ...useOnboardingStore.getState().draft, applicationId }
       if (step.beforeSubmit) {
         app = await step.beforeSubmit(app, [])
-        patch(app)
       }
       const res = await incremental.mutateAsync(step.isLast ? { ...app, completed: true } : app)
+      // Persist beforeSubmit result only after a successful network call to avoid
+      // poisoning the store (e.g. with a computed appropriatenessLevel) on error.
+      if (step.beforeSubmit) patch(app)
       const status = res.applicationStatus
       if (!CONTINUE_STATUSES.includes(status) || app.appropriatenessLevel === 'FAIL') {
         setFailed(true)
@@ -60,7 +62,10 @@ export const GeneralFlow = ({ steps, applicationId }: { steps: StepField[]; appl
         await queryClient.invalidateQueries({ queryKey: ['application'] })
         return
       }
-      setCurrentStep(getNextStep(steps, currentStep, useOnboardingStore.getState().draft))
+      // Use the patched draft for next-step navigation; skip isFailure steps.
+      const next = getNextStep(steps, currentStep, useOnboardingStore.getState().draft)
+      const nextStep = steps[next]
+      setCurrentStep(nextStep?.isFailure === true ? getNextStep(steps, next, useOnboardingStore.getState().draft) : next)
     } catch {
       notify({ severity: 'error', message: 'onboarding.error.saveFailed' })
     }
