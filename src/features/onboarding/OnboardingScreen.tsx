@@ -1,9 +1,14 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Stack, Typography } from '@mui/material'
 import { Button } from '@/components/Button'
 import { useApplication } from './api/onboardingQueries'
 import { useOnboardingStore } from './state/onboardingStore'
 import { SimplifiedFlow } from './flows/simplified/SimplifiedFlow'
+import { GeneralFlow } from './flows/general/GeneralFlow'
+import { buildAuSteps } from './flows/general/jurisdictions/au'
+import { JurisdictionNotAvailable } from './flows/JurisdictionNotAvailable'
+import { useQuestionsList } from './flows/simplified/useQuestionsList'
+import { selectFlow } from './flowSelection'
 
 const Level1Done = ({ applicationId }: { applicationId?: number }) => {
   const [go, setGo] = useState(false)
@@ -22,6 +27,11 @@ export const OnboardingScreen = () => {
   const hydrate = useOnboardingStore((s) => s.hydrate)
   const draft = useOnboardingStore((s) => s.draft)
   const hydrated = useRef(false)
+
+  // Always call hooks unconditionally (rules of hooks).
+  // useQuestionsList and useMemo are only consumed in the general branch below.
+  const questions = useQuestionsList()
+  const auSteps = useMemo(() => buildAuSteps(questions), [questions])
 
   useEffect(() => {
     // Hydrate only on the first load of the application so a refetch does not
@@ -44,5 +54,18 @@ export const OnboardingScreen = () => {
   if (status === 'PENDING_KYC' || status === 'PENDING_REVIEW' || status === 'APPROVED') {
     return <Typography>Your application is being processed. Document verification is the next step.</Typography>
   }
+
+  const flow = selectFlow(app)
+
+  if (flow.kind === 'general') {
+    if (questions.length === 0) return <Typography>Loading questions...</Typography>
+    return <GeneralFlow steps={auSteps} applicationId={app.applicationId} />
+  }
+
+  if (flow.kind === 'unsupported') {
+    return <JurisdictionNotAvailable domain={flow.domain} />
+  }
+
+  // flow.kind === 'simplified' (default / slice-1 dev behaviour)
   return <SimplifiedFlow status={status} applicationId={app.applicationId} />
 }
