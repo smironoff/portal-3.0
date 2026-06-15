@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Stack, Typography } from '@mui/material'
+import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/components/Button'
 import { useApplication } from './api/onboardingQueries'
 import { useOnboardingStore } from './state/onboardingStore'
@@ -13,6 +14,16 @@ import { useQuestionsList } from './flows/simplified/useQuestionsList'
 import { selectFlow } from './flowSelection'
 
 const builders = { AU: buildAuSteps, TMCY: buildTmcySteps, UK: buildUkSteps } as const
+
+const OnboardingComplete = () => {
+  const navigate = useNavigate()
+  return (
+    <Stack spacing={2} sx={{ maxWidth: 420 }}>
+      <Typography>Your application is being processed. Document verification is the next step.</Typography>
+      <Button onClick={() => navigate({ to: '/account/verify-email' })}>Verify your email</Button>
+    </Stack>
+  )
+}
 
 const Level1Done = ({ applicationId }: { applicationId?: number }) => {
   const [go, setGo] = useState(false)
@@ -58,7 +69,7 @@ export const OnboardingScreen = () => {
     return <Level1Done applicationId={app.applicationId} />
   }
   if (status === 'PENDING_KYC' || status === 'PENDING_REVIEW' || status === 'APPROVED') {
-    return <Typography>Your application is being processed. Document verification is the next step.</Typography>
+    return <OnboardingComplete />
   }
 
   if (flow.kind === 'general') {
