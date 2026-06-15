@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useOnboardingStore } from '../../state/onboardingStore'
 
 const submitLevelOne = vi.fn()
@@ -23,7 +24,12 @@ beforeEach(() => {
 describe('SimplifiedFlow level 1', () => {
   it('walks the level-1 steps and submits at the end', async () => {
     const { SimplifiedFlow } = await import('./SimplifiedFlow')
-    render(<SimplifiedFlow status="INCOMPLETE" applicationId={1} />)
+    const queryClient = new QueryClient()
+    render(
+      <QueryClientProvider client={queryClient}>
+        <SimplifiedFlow status="INCOMPLETE" applicationId={1} />
+      </QueryClientProvider>,
+    )
 
     await userEvent.type(screen.getByLabelText(/first name/i), 'Jo')
     await userEvent.type(screen.getByLabelText(/last name/i), 'Lee')

@@ -22,15 +22,21 @@ describe('onboardingApi', () => {
   })
 
   it('incrementalSubmit posts application_submit and returns the status', async () => {
-    http.tfboCall.mockResolvedValue({ payload: [{ result: { applicationStatus: 'INCOMPLETE', applicationId: 1 } }] })
+    http.tfboCall.mockResolvedValue({ payload: [{ status: 'OK', result: { applicationStatus: 'INCOMPLETE', applicationId: 1 } }] })
     const { incrementalSubmit } = await import('./onboardingApi')
     const res = await incrementalSubmit({ accountHolderFirstName: 'Jo' })
     expect(http.tfboCall).toHaveBeenCalledWith('application', 'application_submit', { accountHolderFirstName: 'Jo' }, 0)
     expect(res.applicationStatus).toBe('INCOMPLETE')
   })
 
+  it('incrementalSubmit rejects when the envelope status is not OK', async () => {
+    http.tfboCall.mockResolvedValue({ payload: [{ status: 'SYS_ERR', message: 'nope' }] })
+    const { incrementalSubmit } = await import('./onboardingApi')
+    await expect(incrementalSubmit({ accountHolderFirstName: 'Jo' })).rejects.toThrow('nope')
+  })
+
   it('submitLevelOne / submitLevelTwo post the right actions', async () => {
-    http.tfboCall.mockResolvedValue({ payload: [{ result: { applicationId: 1 } }] })
+    http.tfboCall.mockResolvedValue({ payload: [{ status: 'OK', result: { applicationId: 1 } }] })
     const { submitLevelOne, submitLevelTwo } = await import('./onboardingApi')
     await submitLevelOne({ applicationId: 1 })
     expect(http.tfboCall).toHaveBeenCalledWith('application', 'simplified_submit_level_one', { applicationId: 1 }, 0)

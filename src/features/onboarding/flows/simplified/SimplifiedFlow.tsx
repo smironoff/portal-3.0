@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { Stack, Typography } from '@mui/material'
+import { useQueryClient } from '@tanstack/react-query'
 import { LEVEL_ONE_STEPS, LEVEL_TWO_STEPS } from './flowConfig'
 import { getNextStep, getPreviousStep, getStartingStep } from '../../engine/stepMachine'
 import { useOnboardingStore } from '../../state/onboardingStore'
@@ -13,16 +14,24 @@ export const SimplifiedFlow = ({ status, applicationId }: { status: ApplicationS
   const draft = useOnboardingStore((s) => s.draft)
   const currentStep = useOnboardingStore((s) => s.currentStep)
   const setCurrentStep = useOnboardingStore((s) => s.setCurrentStep)
+  // TODO confirm org id source
   const questions = useQuestions(draft.organizationId as number | undefined).data ?? []
   const incremental = useIncrementalSubmit()
   const submitLevelOne = useSubmitLevelOne()
   const submitLevelTwo = useSubmitLevelTwo()
   const notify = useNotificationStore((s) => s.push)
+  const queryClient = useQueryClient()
 
   useEffect(() => {
     setCurrentStep(getStartingStep(steps, -1, useOnboardingStore.getState().draft, questions))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status])
+
+  // Level 2 question steps depend on the org id to resolve. Without it the
+  // question machine never advances, so surface an explicit error instead.
+  if (!isLevelOne && draft.organizationId == null) {
+    return <Typography>We could not load the application questions. Please contact support.</Typography>
+  }
 
   if (currentStep < 0 || currentStep >= steps.length) return <Typography>Loading...</Typography>
   const step = steps[currentStep]!
@@ -33,7 +42,11 @@ export const SimplifiedFlow = ({ status, applicationId }: { status: ApplicationS
       const app = { ...useOnboardingStore.getState().draft, applicationId }
       if (step.isLast) {
         if (isLevelOne) await submitLevelOne.mutateAsync({ ...app, completed: true })
+        // SimplifiedFlow has no scored appropriateness test (experience questions only),
+        // so PASS is the legacy-equivalent value. TODO(compliance): confirm the backend
+        // re-derives appropriateness server-side and does not trust this client value.
         else await submitLevelTwo.mutateAsync({ ...app, completed: true, appropriatenessLevel: 'PASS' })
+        await queryClient.invalidateQueries({ queryKey: ['application'] })
       } else {
         await incremental.mutateAsync(app)
         setCurrentStep(getNextStep(steps, currentStep, useOnboardingStore.getState().draft))

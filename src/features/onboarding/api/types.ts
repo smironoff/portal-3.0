@@ -34,6 +34,7 @@ export interface Question {
 // Subset of the legacy AppInfo used by SimplifiedFlow L1 + L2.
 export interface AppInfo {
   applicationId?: number
+  organizationId?: number
   completed?: boolean
   status?: ApplicationStatus
   accountHolderFirstName?: string

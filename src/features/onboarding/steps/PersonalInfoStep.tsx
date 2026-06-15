@@ -6,13 +6,31 @@ import { StepLayout } from '../components/StepLayout'
 import { useOnboardingStore } from '../state/onboardingStore'
 import type { StepComponentProps } from '../engine/stepConfig'
 
-const schema = z.object({
-  accountHolderFirstName: z.string().min(1, 'First name is required'),
-  accountHolderLastName: z.string().min(1, 'Last name is required'),
-  accountHolderDayOfBirth: z.number().int().min(1).max(31),
-  accountHolderMonthOfBirth: z.number().int().min(1).max(12),
-  accountHolderYearOfBirth: z.number().int().min(1900).max(2025),
-})
+const computeAge = (day: number, month: number, year: number): number => {
+  const today = new Date()
+  let age = today.getFullYear() - year
+  const hadBirthday = today.getMonth() + 1 > month || (today.getMonth() + 1 === month && today.getDate() >= day)
+  if (!hadBirthday) age -= 1
+  return age
+}
+
+const schema = z
+  .object({
+    accountHolderFirstName: z.string().min(1, 'First name is required'),
+    accountHolderLastName: z.string().min(1, 'Last name is required'),
+    accountHolderDayOfBirth: z.number().int().min(1).max(31),
+    accountHolderMonthOfBirth: z.number().int().min(1).max(12),
+    accountHolderYearOfBirth: z.number().int().min(1900),
+  })
+  .superRefine((v, ctx) => {
+    if (computeAge(v.accountHolderDayOfBirth, v.accountHolderMonthOfBirth, v.accountHolderYearOfBirth) < 18) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'You must be at least 18',
+        path: ['accountHolderYearOfBirth'],
+      })
+    }
+  })
 type Values = z.infer<typeof schema>
 
 export const PersonalInfoStep = ({ onNext, onBack, canGoBack }: StepComponentProps) => {
@@ -63,6 +81,8 @@ export const PersonalInfoStep = ({ onNext, onBack, canGoBack }: StepComponentPro
       <TextField
         label="Year"
         type="number"
+        error={!!errors.accountHolderYearOfBirth}
+        helperText={errors.accountHolderYearOfBirth?.message}
         {...register('accountHolderYearOfBirth', { valueAsNumber: true })}
       />
     </StepLayout>

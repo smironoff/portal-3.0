@@ -31,4 +31,17 @@ describe('PersonalInfoStep', () => {
     await userEvent.click(screen.getByRole('button', { name: /continue/i }))
     expect(await screen.findByText(/first name is required/i)).toBeInTheDocument()
   })
+
+  it('rejects a date of birth under 18', async () => {
+    const onNext = vi.fn()
+    render(<PersonalInfoStep onNext={onNext} canGoBack={false} />)
+    await userEvent.type(screen.getByLabelText(/first name/i), 'Jo')
+    await userEvent.type(screen.getByLabelText(/last name/i), 'Lee')
+    await userEvent.type(screen.getByLabelText(/day/i), '1')
+    await userEvent.type(screen.getByLabelText(/month/i), '2')
+    await userEvent.type(screen.getByLabelText(/year/i), String(new Date().getFullYear()))
+    await userEvent.click(screen.getByRole('button', { name: /continue/i }))
+    expect(await screen.findByText(/at least 18/i)).toBeInTheDocument()
+    expect(onNext).not.toHaveBeenCalled()
+  })
 })
