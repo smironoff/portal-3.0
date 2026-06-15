@@ -9,6 +9,8 @@ export interface Organization {
 
 export interface Country extends BaseCountry {
   used?: boolean
+  forceEmailValidate?: boolean
+  isSimplifyOnboarding?: boolean
   organization: Organization
 }
 
