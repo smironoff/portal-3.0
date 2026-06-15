@@ -1,9 +1,8 @@
 import { defineConfig } from '@playwright/test'
 
-// The dev server runs HTTPS on portal-test.thinkmarkets.com:443 (needs sudo).
-// For e2e we override host/port via the Vite CLI to a non-privileged port and
-// ignore the self-signed cert (it is issued for portal-test, not 127.0.0.1).
-const E2E_ORIGIN = 'https://127.0.0.1:4173'
+// The dev server falls back to HTTP when .certs/server.{key,crt} are absent.
+// E2E tests use plain HTTP on a non-privileged port.
+const E2E_ORIGIN = 'http://127.0.0.1:4173'
 
 export default defineConfig({
   testDir: './e2e',

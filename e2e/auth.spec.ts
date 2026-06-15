@@ -17,18 +17,15 @@ test('login with 2FA reaches the landing screen', async ({ page }) => {
       },
     })
   )
-  await page.route('**/nsdata', (route) =>
-    route.fulfill({
-      json: {
-        id: 1,
-        session_id: 's',
-        token: 't',
-        payload: [
-          { module: 'profile', action: 'get_user', status: 'OK', result: { id: 1, email: 'a@b.com', additionalAttributes: {} } },
-        ],
-      },
-    })
-  )
+  await page.route('**/nsdata', async (route) => {
+    const body = route.request().postDataJSON?.() as { payload?: Array<{ action?: string }> } | undefined
+    const action = body?.payload?.[0]?.action
+    const ok = (result: unknown) => route.fulfill({ json: { id: 1, session_id: 's', token: 't', payload: [{ module: 'application', action, status: 'OK', result }] } })
+    if (action === 'get_user') return ok({ id: 1, email: 'a@b.com', additionalAttributes: {} })
+    if (action === 'getLastApplicationsInfo') return ok([{ applicationId: 1, status: 'INCOMPLETE' }])
+    if (action === 'getQuestions') return ok([])
+    return ok({})
+  })
 
   await page.goto('/account/login')
   await page.getByLabel(/email/i).fill('a@b.com')
@@ -39,7 +36,8 @@ test('login with 2FA reaches the landing screen', async ({ page }) => {
   await page.getByLabel(/code/i).fill('123456')
   await page.getByRole('button', { name: /verify/i }).click()
 
-  await expect(page.getByText('Hello, Portal 3.0')).toBeVisible()
+  await expect(page).toHaveURL(/\/onboarding/)
+  await expect(page.getByText('Personal information')).toBeVisible()
 })
 
 test('password reset request advances to the sent screen', async ({ page }) => {

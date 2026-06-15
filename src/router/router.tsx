@@ -2,7 +2,7 @@ import { createRouter } from '@tanstack/react-router'
 import { Route as RootRoute } from './routes/__root'
 import { IndexRoute } from './routes/public'
 import { AuthenticatedRoute } from './routes/authenticated'
-import { HelloRoute } from './routes/hello'
+import { OnboardingRoute } from '@/features/onboarding/routes/onboarding'
 import { LoginRoute } from '@/features/auth/routes/login'
 import { TwoFactorRoute } from '@/features/auth/routes/twoFactor'
 import { ResetRequestRoute } from '@/features/auth/routes/resetRequest'
@@ -18,7 +18,7 @@ const routeTree = RootRoute.addChildren([
   ResetSentRoute,
   ResetConfirmRoute,
   ResetDoneRoute,
-  AuthenticatedRoute.addChildren([HelloRoute]),
+  AuthenticatedRoute.addChildren([OnboardingRoute]),
 ])
 
 export const router = createRouter({ routeTree })
