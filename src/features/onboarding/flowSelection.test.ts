@@ -12,7 +12,10 @@ describe('selectFlow', () => {
     expect(selectFlow({})).toEqual({ kind: 'simplified' })
   })
   it('routes unsupported domains to not-available', () => {
-    expect(selectFlow({ portalAccountDomain: 'UK' })).toEqual({ kind: 'unsupported', domain: 'UK' })
+    expect(selectFlow({ portalAccountDomain: 'UNKNOWN' })).toEqual({ kind: 'unsupported', domain: 'UNKNOWN' })
+  })
+  it('routes UK to general UK', () => {
+    expect(selectFlow({ portalAccountDomain: 'UK' })).toEqual({ kind: 'general', jurisdiction: 'UK' })
   })
   it('routes TMCY and TMEU to general TMCY', () => {
     expect(selectFlow({ portalAccountDomain: 'TMCY' })).toEqual({ kind: 'general', jurisdiction: 'TMCY' })

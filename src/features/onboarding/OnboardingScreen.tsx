@@ -7,11 +7,12 @@ import { SimplifiedFlow } from './flows/simplified/SimplifiedFlow'
 import { GeneralFlow } from './flows/general/GeneralFlow'
 import { buildAuSteps } from './flows/general/jurisdictions/au'
 import { buildTmcySteps } from './flows/general/jurisdictions/tmcy'
+import { buildUkSteps } from './flows/general/jurisdictions/uk'
 import { JurisdictionNotAvailable } from './flows/JurisdictionNotAvailable'
 import { useQuestionsList } from './flows/simplified/useQuestionsList'
 import { selectFlow } from './flowSelection'
 
-const builders = { AU: buildAuSteps, TMCY: buildTmcySteps } as const
+const builders = { AU: buildAuSteps, TMCY: buildTmcySteps, UK: buildUkSteps } as const
 
 const Level1Done = ({ applicationId }: { applicationId?: number }) => {
   const [go, setGo] = useState(false)
