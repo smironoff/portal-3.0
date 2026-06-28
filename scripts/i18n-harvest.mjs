@@ -6,6 +6,12 @@ import { fileURLToPath } from 'node:url'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const LEGACY = 'C:/Work/ThinkMarkets/portal-2.0/public/locales'
+
+if (!existsSync(LEGACY)) {
+  console.error(`Legacy locales not found at ${LEGACY}. Set the correct path and re-run.`)
+  process.exit(1)
+}
+
 const LANGS = ['ar','cs','de','el','es','id','it','ja','ms-MY','pl','pt-BR','th','tr','vi','zh-Hans','zh-Hant']
 const NS = ['auth', 'common']
 
