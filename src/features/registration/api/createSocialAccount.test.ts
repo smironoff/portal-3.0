@@ -84,4 +84,11 @@ describe('createSocialAccount', () => {
     await expect(createSocialAccount(baseInput)).rejects.toThrow('Social registration failed: ASE-008')
     expect(mockSubmitLevelOne).not.toHaveBeenCalled()
   })
+
+  it('throws and does not call submitLevelOne or setAuthTokens when the register returns a non-OK status with no code', async () => {
+    mockSocialRegister.mockResolvedValue({ status: 'NOK' })
+    await expect(createSocialAccount(baseInput)).rejects.toThrow('Social registration failed: NOK')
+    expect(mockSubmitLevelOne).not.toHaveBeenCalled()
+    expect(mockTokenStore.setAuthTokens).not.toHaveBeenCalled()
+  })
 })

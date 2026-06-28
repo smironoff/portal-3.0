@@ -99,8 +99,8 @@ export const createSocialAccount = async (
     brand: 'ThinkMarkets',
     source: 'TP3-LiveApp',
   })
-  if (auth.code && auth.status !== 'OK') {
-    throw new Error(`Social registration failed: ${auth.code}`)
+  if (auth.status !== 'OK') {
+    throw new Error(`Social registration failed: ${auth.code ?? auth.status}`)
   }
   tokenStore.setAuthTokens(auth.tokens ?? input.social.keycloakTokens)
   useSessionStore.getState().setLoggedIn(true)
