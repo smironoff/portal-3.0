@@ -48,7 +48,7 @@ export const SimplifiedFlow = ({ status, applicationId }: { status: ApplicationS
         await queryClient.invalidateQueries({ queryKey: ['application'] })
       } else {
         if (isLevelOne) await submitLevelOne.mutateAsync(app)
-        else await submitLevelTwo.mutateAsync({ ...app, appropriatenessLevel: 'PASS' })
+        else await submitLevelTwo.mutateAsync(app)
         setCurrentStep(getNextStep(steps, currentStep, useOnboardingStore.getState().draft))
       }
     } catch {
