@@ -11,7 +11,8 @@ const { mockIsEmailVerificationRequired, mockIsUserVerified } = vi.hoisted(() =>
 }))
 
 vi.mock('./api/onboardingQueries', () => ({
-  useApplication: () => ({ data: { applicationId: 1, status: 'PENDING_KYC' }, isLoading: false }),
+  useApplication: () => ({ data: { applicationId: 1 }, isLoading: false }),
+  useApplicationStatuses: () => ({ data: [{ application_status: 'PENDING_KYC' }], isLoading: false }),
   useQuestions: () => ({ data: [] }),
   useIncrementalSubmit: () => ({ mutateAsync: vi.fn() }),
   useSubmitLevelOne: () => ({ mutateAsync: vi.fn() }),
