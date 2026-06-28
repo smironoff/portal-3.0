@@ -7,12 +7,8 @@ import { Box, Stack, TextField, MenuItem, FormControlLabel, Checkbox } from '@mu
 import { RHFTextField } from '@/components/RHFTextField'
 import { Button } from '@/components/Button'
 import { useCountries } from '../api/countriesQueries'
-import { useRegister } from '../api/registerQueries'
-import { storeRegistrationAuth, EmailAlreadyRegisteredError } from '../api/registerApi'
-import { useCaptcha } from '@/features/auth/hooks/useCaptcha'
-import { useSessionStore } from '@/state/sessionStore'
-import { useNotificationStore } from '@/state/notificationStore'
 import { filterCountries, domainForCountry, organizationIdForCountry, getLanguageId } from '../country'
+import { useRegistrationStore } from '../state/registrationStore'
 import { readTracking } from '../tracking'
 
 const password = z
@@ -55,50 +51,27 @@ export const RegisterForm = () => {
   })
   const { data: countryData } = useCountries()
   const countries = useMemo(() => filterCountries(countryData ?? []), [countryData])
-  const register = useRegister()
-  const captcha = useCaptcha()
+  const setDraft = useRegistrationStore((s) => s.setDraft)
   const navigate = useNavigate()
-  const notify = useNotificationStore((s) => s.push)
 
   const goNext = async () => {
     if (await methods.trigger(['email', 'password', 'confirmPassword'])) setStep(1)
   }
 
-  const onSubmit = async (v: Values) => {
+  const onSubmit = (v: Values) => {
     const country = countries.find((c) => c.id === v.countryId)
     if (!country) return
-    try {
-      const token = await captcha.execute()
-      const res = await register.mutateAsync({
-        accountHolderEmail: v.email,
-        accountHolderPassword: v.password,
-        originCountry: country.id,
-        preferredOrganization: organizationIdForCountry(country),
-        portalAccountDomain: domainForCountry(country),
-        agreeToAllTerms: true,
-        isMarketingOptOut: !v.marketingConsent,
-        accountType: 'individual',
-        source: tracking.source,
-        brand: 'ThinkMarkets',
-        preferredLanguage: getLanguageId(country, [], 'en'),
-        afsAid: v.ibCode || undefined,
-        utmLink: tracking.utmLink,
-        visitorId: tracking.visitorId,
-        referrerId: tracking.referrerId,
-        recaptchaResponse: token,
-      })
-      storeRegistrationAuth(res)
-      useSessionStore.getState().setLoggedIn(true)
-      navigate({ to: '/onboarding' })
-    } catch (e) {
-      captcha.reset()
-      if (e instanceof EmailAlreadyRegisteredError) {
-        setStep(0)
-        methods.setError('email', { message: 'This email is already registered' })
-        return
-      }
-      notify({ severity: 'error', message: 'auth.error.generic' })
-    }
+    setDraft({
+      email: v.email,
+      password: v.password,
+      originCountry: country.id,
+      preferredOrganization: organizationIdForCountry(country),
+      portalAccountDomain: domainForCountry(country),
+      preferredLanguage: getLanguageId(country, [], 'en'),
+      agreeToAllTerms: true,
+      isMarketingOptOut: !v.marketingConsent,
+    })
+    navigate({ to: '/account/personal-information' })
   }
 
   return (
@@ -161,11 +134,10 @@ export const RegisterForm = () => {
               />
               <Stack direction="row" spacing={1}>
                 <Button type="button" variant="text" onClick={() => setStep(0)}>Back</Button>
-                <Button type="submit" disabled={register.isPending}>Create account</Button>
+                <Button type="submit">Continue</Button>
               </Stack>
             </>
           )}
-          {captcha.element}
         </Stack>
       </Box>
     </FormProvider>

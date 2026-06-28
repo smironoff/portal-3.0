@@ -1,33 +1,32 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { useRegistrationStore } from '../state/registrationStore'
 
-const mutateAsync = vi.fn()
 const navigate = vi.fn()
-const setLoggedIn = vi.fn()
-const storeRegistrationAuth = vi.fn()
 
 vi.mock('../api/countriesQueries', () => ({
   useCountries: () => ({
-    data: [{ id: 1, name: 'Australia', code2: 'AU', code3: 'AUS', phoneCode: 61, european: false, organization: { id: 7, name: 'AU' } }],
+    data: [
+      {
+        id: 158,
+        name: 'Nigeria',
+        code2: 'NG',
+        code3: 'NGA',
+        phoneCode: 234,
+        european: false,
+        isSimplifyOnboarding: true,
+        organization: { id: 14, name: 'TMLC' },
+      },
+    ],
   }),
 }))
-vi.mock('../api/registerQueries', () => ({ useRegister: () => ({ mutateAsync, isPending: false }) }))
-vi.mock('../api/registerApi', async () => {
-  const actual = await vi.importActual<typeof import('../api/registerApi')>('../api/registerApi')
-  return { ...actual, storeRegistrationAuth }
-})
-vi.mock('@/features/auth/hooks/useCaptcha', () => ({
-  useCaptcha: () => ({ element: null, execute: async () => 'cap', reset: vi.fn() }),
-}))
-vi.mock('@tanstack/react-router', () => ({ useNavigate: () => navigate }))
-vi.mock('@/state/sessionStore', () => ({ useSessionStore: { getState: () => ({ setLoggedIn }) } }))
+
+vi.mock('@tanstack/react-router', () => ({ useNavigate: () => navigate, Link: 'a' }))
 
 beforeEach(() => {
-  mutateAsync.mockReset()
   navigate.mockReset()
-  setLoggedIn.mockReset()
-  storeRegistrationAuth.mockReset()
+  useRegistrationStore.setState({ draft: null })
 })
 
 const fillStepOne = async () => {
@@ -48,43 +47,23 @@ describe('RegisterForm', () => {
     expect(await screen.findByText(/at least 8 characters/i)).toBeInTheDocument()
   })
 
-  it('requires terms acceptance and creates the account on submit', async () => {
-    mutateAsync.mockResolvedValue({ session_id: 's', token: 't', payload: [{ status: 'OK', result: { applicationId: 9 } }] })
+  it('requires terms acceptance then stores the draft and navigates on submit', async () => {
     const { RegisterForm } = await import('./RegisterForm')
     render(<RegisterForm />)
     await fillStepOne()
     await userEvent.click(screen.getByLabelText(/country of residence/i))
-    await userEvent.click(await screen.findByRole('option', { name: 'Australia' }))
-    await userEvent.click(screen.getByRole('button', { name: /create account/i }))
+    await userEvent.click(await screen.findByRole('option', { name: 'Nigeria' }))
+    await userEvent.click(screen.getByRole('button', { name: /continue/i }))
     expect(await screen.findByText(/must accept the terms/i)).toBeInTheDocument()
-    expect(mutateAsync).not.toHaveBeenCalled()
+    expect(navigate).not.toHaveBeenCalled()
     await userEvent.click(screen.getByLabelText(/i agree/i))
-    await userEvent.click(screen.getByRole('button', { name: /create account/i }))
-    expect(mutateAsync).toHaveBeenCalledWith(
-      expect.objectContaining({
-        accountHolderEmail: 'a@b.com', accountHolderPassword: 'Secret12',
-        originCountry: 1, preferredOrganization: 7, portalAccountDomain: 'AU',
-        agreeToAllTerms: true, isMarketingOptOut: true, accountType: 'individual',
-        recaptchaResponse: 'cap',
-      })
-    )
-    expect(storeRegistrationAuth).toHaveBeenCalled()
-    expect(setLoggedIn).toHaveBeenCalledWith(true)
-    expect(navigate).toHaveBeenCalledWith({ to: '/onboarding' })
-  })
-
-  it('shows an inline email error when already registered', async () => {
-    const { EmailAlreadyRegisteredError } = await import('../api/registerApi')
-    mutateAsync.mockRejectedValue(new EmailAlreadyRegisteredError())
-    const { RegisterForm } = await import('./RegisterForm')
-    render(<RegisterForm />)
-    await fillStepOne()
-    await userEvent.click(screen.getByLabelText(/country of residence/i))
-    await userEvent.click(await screen.findByRole('option', { name: 'Australia' }))
-    await userEvent.click(screen.getByLabelText(/i agree/i))
-    await userEvent.click(screen.getByRole('button', { name: /create account/i }))
-    expect(await screen.findByText(/already registered/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /create account/i })).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: /continue/i }))
+    expect(navigate).toHaveBeenCalledWith({ to: '/account/personal-information' })
+    const draft = useRegistrationStore.getState().draft
+    expect(draft?.originCountry).toBe(158)
+    expect(draft?.email).toBe('a@b.com')
+    expect(draft?.preferredOrganization).toBe(14)
+    expect(draft?.isMarketingOptOut).toBe(true)
+    expect(draft?.agreeToAllTerms).toBe(true)
   })
 })
