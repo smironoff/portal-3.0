@@ -85,7 +85,7 @@ export const OnboardingScreen = () => {
     }
   }, [app, hydrate])
 
-  if (appLoading || statusLoading || !statuses) return <Typography>Loading your application...</Typography>
+  if (appLoading || statusLoading) return <Typography>Loading your application...</Typography>
   if (hasApproved) return <ApprovedRedirect />
   if (!app) return <Typography>Loading your application...</Typography>
 

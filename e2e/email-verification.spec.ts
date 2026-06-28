@@ -1,11 +1,10 @@
 import { test, expect } from '@playwright/test'
 
-// Session establishment: sessionStore.loggedIn is in-memory only (not persisted to
-// localStorage), so seeding tokens at boot has no effect. The only way to flip
-// loggedIn=true on a fresh page load is to complete an in-app flow that calls
-// useSessionStore.getState().setLoggedIn(true). RegisterForm does this immediately
-// after a successful incremental_submit, so we drive the registration UI first, then
-// navigate to /onboarding where PENDING_KYC triggers the "Verify your email" button.
+// Session establishment: this test drives the registration UI to reach onboarding
+// rather than relying on persisted-token rehydration. RegisterForm calls
+// useSessionStore.getState().setLoggedIn(true) after a successful incremental_submit,
+// which is the mechanism used here to arrive at /onboarding where PENDING_KYC
+// triggers the "Verify your email" button.
 test('completed onboarding leads to a successful email verification', async ({ page }) => {
   await page.route('**/nsdata', async (route) => {
     const body = route.request().postDataJSON?.() as { payload?: Array<{ action?: string }> } | undefined
