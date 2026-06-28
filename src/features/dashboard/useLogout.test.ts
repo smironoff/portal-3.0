@@ -4,7 +4,7 @@ import { renderHook } from '@testing-library/react'
 const navigate = vi.fn()
 const clear = vi.fn()
 vi.mock('@tanstack/react-router', () => ({ useNavigate: () => navigate }))
-vi.mock('@/api/tokenStore', () => ({ tokenStore: { clear } }))
+vi.mock('@/api/tokenStore', () => ({ tokenStore: { clear, hasValidSession: () => false } }))
 
 beforeEach(() => {
   navigate.mockReset()

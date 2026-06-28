@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Stack, Typography } from '@mui/material'
 import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/components/Button'
-import { useApplication } from './api/onboardingQueries'
+import { useApplication, useApplicationStatuses } from './api/onboardingQueries'
 import { useOnboardingStore } from './state/onboardingStore'
 import { SimplifiedFlow } from './flows/simplified/SimplifiedFlow'
 import { GeneralFlow } from './flows/general/GeneralFlow'
@@ -60,7 +60,10 @@ const Level1Done = ({ applicationId }: { applicationId?: number }) => {
 }
 
 export const OnboardingScreen = () => {
-  const { data: app, isLoading } = useApplication(true)
+  const { data: app, isLoading: appLoading } = useApplication(true)
+  const { data: statuses, isLoading: statusLoading } = useApplicationStatuses(true)
+  const hasApproved = (statuses ?? []).some((s) => s.application_status === 'APPROVED')
+  const latestStatus = statuses?.[statuses.length - 1]?.application_status
   const hydrate = useOnboardingStore((s) => s.hydrate)
   const draft = useOnboardingStore((s) => s.draft)
   const hydrated = useRef(false)
@@ -82,17 +85,16 @@ export const OnboardingScreen = () => {
     }
   }, [app, hydrate])
 
-  if (isLoading || !app) return <Typography>Loading your application...</Typography>
+  if (appLoading || statusLoading) return <Typography>Loading your application...</Typography>
+  if (hasApproved) return <ApprovedRedirect />
+  if (!app) return <Typography>Loading your application...</Typography>
 
-  const status = app.status ?? 'INCOMPLETE'
+  const status = latestStatus ?? 'INCOMPLETE'
   if (status === 'DENIED' || status === 'FAILED') {
     return <Typography>Your application was not approved. Please contact support for assistance.</Typography>
   }
   if (status === 'LEVEL1_APPROVED' && !draft.completed) {
     return <Level1Done applicationId={app.applicationId} />
-  }
-  if (status === 'APPROVED') {
-    return <ApprovedRedirect />
   }
   if (status === 'PENDING_KYC' || status === 'PENDING_REVIEW') {
     return <OnboardingComplete />
@@ -102,11 +104,8 @@ export const OnboardingScreen = () => {
     if (questions.length === 0) return <Typography>Loading questions...</Typography>
     return <GeneralFlow steps={steps} applicationId={app.applicationId} questions={questions} />
   }
-
   if (flow.kind === 'unsupported') {
     return <JurisdictionNotAvailable domain={flow.domain} />
   }
-
-  // flow.kind === 'simplified' (default / slice-1 dev behaviour)
   return <SimplifiedFlow status={status} applicationId={app.applicationId} />
 }

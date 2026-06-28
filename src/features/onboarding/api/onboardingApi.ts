@@ -1,7 +1,7 @@
 import { getHttpClient } from '@/api/client'
 import { Authorize } from '@/api/httpClient'
 import type { APIResponse } from '@/api/envelope'
-import type { AppInfo, Question, IncrementalSubmitResponse, SubmitLevelResponse } from './types'
+import type { AppInfo, Question, IncrementalSubmitResponse, SubmitLevelResponse, ApplicationStatusResponse } from './types'
 
 const unwrap = <T>(res: APIResponse<T>): T => {
   const item = res.payload?.[0]
@@ -35,4 +35,10 @@ export const submitLevelOne = async (app: Partial<AppInfo>): Promise<SubmitLevel
 export const submitLevelTwo = async (app: Partial<AppInfo>): Promise<SubmitLevelResponse> => {
   const res = await getHttpClient().tfboCall<SubmitLevelResponse>('application', 'simplified_submit_level_two', app, Authorize.Yes)
   return unwrap(res)
+}
+
+export const loadApplicationStatuses = async (): Promise<ApplicationStatusResponse[]> => {
+  const res = await getHttpClient().tfboCall<ApplicationStatusResponse[]>('application', 'check_application_statuses', {}, Authorize.Yes)
+  const statuses = res.payload?.[0]?.result
+  return Array.isArray(statuses) ? statuses : []
 }

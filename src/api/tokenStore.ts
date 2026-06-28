@@ -40,6 +40,14 @@ export const tokenStore = {
     localStorage.setItem(STORAGE_KEYS.validUntil, tokens.refreshTokenValidUntil)
   },
 
+  hasValidSession: (): boolean => {
+    const refresh = read(STORAGE_KEYS.refreshToken)
+    const validUntil = read(STORAGE_KEYS.validUntil)
+    if (!refresh || !validUntil) return false
+    const expiry = Date.parse(validUntil)
+    return Number.isFinite(expiry) && expiry > Date.now()
+  },
+
   clear() {
     Object.values(STORAGE_KEYS).forEach((k) => localStorage.removeItem(k))
   },
