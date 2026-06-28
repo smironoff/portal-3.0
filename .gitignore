@@ -36,3 +36,6 @@ playwright-report
 
 # Project-local scratch directory for temporary files - never commit
 /tmp/
+
+# Playwright MCP browser-session scratch (screenshots, snapshots, logs)
+.playwright-mcp/
