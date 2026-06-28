@@ -4,10 +4,11 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import { useNavigate } from '@tanstack/react-router'
-import { Box, Stack, FormControlLabel, Checkbox } from '@mui/material'
+import { Link as RouterLink, useNavigate } from '@tanstack/react-router'
+import { Box, Stack, FormControlLabel, Checkbox, Link } from '@mui/material'
 import { RHFTextField } from '@/components/RHFTextField'
 import { Button } from '@/components/Button'
+import { AuthCard } from './AuthCard'
 import { useLogin } from '../api/authQueries'
 import { useCaptcha } from '../hooks/useCaptcha'
 import { tokenStore } from '@/api/tokenStore'
@@ -72,26 +73,33 @@ export const LoginForm = () => {
   }
 
   return (
-    <FormProvider {...methods}>
-      <Box component="form" onSubmit={methods.handleSubmit(onSubmit)} noValidate>
-        <Stack spacing={2} sx={{ maxWidth: 360 }}>
-          <RHFTextField name="email" label={t('login.email')} type="email" autoComplete="username" />
-          <RHFTextField
-            name="password"
-            label={t('login.password')}
-            type="password"
-            autoComplete="current-password"
-          />
-          <FormControlLabel
-            control={<Checkbox {...methods.register('keepSignedIn')} />}
-            label={t('login.keepSignedIn')}
-          />
-          <Button type="submit" disabled={login.isPending}>
-            {t('login.signIn')}
-          </Button>
-          {captcha.element}
-        </Stack>
-      </Box>
-    </FormProvider>
+    <AuthCard title={t('login.title')}>
+      <FormProvider {...methods}>
+        <Box component="form" onSubmit={methods.handleSubmit(onSubmit)} noValidate>
+          <Stack spacing={2}>
+            <RHFTextField name="email" label={t('login.email')} type="email" autoComplete="username" />
+            <RHFTextField
+              name="password"
+              label={t('login.password')}
+              type="password"
+              autoComplete="current-password"
+            />
+            <FormControlLabel
+              control={<Checkbox {...methods.register('keepSignedIn')} />}
+              label={t('login.keepSignedIn')}
+            />
+            <Button type="submit" disabled={login.isPending}>
+              {t('login.signIn')}
+            </Button>
+            <Box sx={{ textAlign: 'center' }}>
+              <Link component={RouterLink} to="/account/reset" variant="body2" underline="hover">
+                {t('login.forgotPassword')}
+              </Link>
+            </Box>
+            {captcha.element}
+          </Stack>
+        </Box>
+      </FormProvider>
+    </AuthCard>
   )
 }

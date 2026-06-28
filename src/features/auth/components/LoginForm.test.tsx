@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import type { ReactNode } from 'react'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
@@ -8,7 +9,10 @@ vi.mock('../api/authQueries', () => ({ useLogin: () => ({ mutateAsync, isPending
 vi.mock('../hooks/useCaptcha', () => ({
   useCaptcha: () => ({ element: null, execute: async () => 'cap', reset: vi.fn() }),
 }))
-vi.mock('@tanstack/react-router', () => ({ useNavigate: () => navigate }))
+vi.mock('@tanstack/react-router', () => ({
+  useNavigate: () => navigate,
+  Link: ({ children }: { children?: ReactNode }) => <a>{children}</a>,
+}))
 
 beforeEach(() => {
   mutateAsync.mockReset()
