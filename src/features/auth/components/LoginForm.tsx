@@ -1,6 +1,9 @@
+import { useMemo } from 'react'
 import { useForm, FormProvider } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { useNavigate } from '@tanstack/react-router'
 import { Box, Stack, FormControlLabel, Checkbox } from '@mui/material'
 import { RHFTextField } from '@/components/RHFTextField'
@@ -16,14 +19,17 @@ import { getUserProfile } from '../api/authApi'
 import { LOGGED_IN_STATUSES } from '../api/authTypes'
 import { aseCodeToMessageKey } from '../api/aseCodes'
 
-const schema = z.object({
-  email: z.string().min(1, 'Email is required').email('Enter a valid email'),
-  password: z.string().min(1, 'Password is required'),
-  keepSignedIn: z.boolean(),
-})
-type Values = z.infer<typeof schema>
+const makeSchema = (t: TFunction<'auth'>) =>
+  z.object({
+    email: z.string().min(1, t('validation.emailRequired')).email(t('validation.emailInvalid')),
+    password: z.string().min(1, t('validation.passwordRequired')),
+    keepSignedIn: z.boolean(),
+  })
+type Values = z.infer<ReturnType<typeof makeSchema>>
 
 export const LoginForm = () => {
+  const { t } = useTranslation('auth')
+  const schema = useMemo(() => makeSchema(t), [t])
   const methods = useForm<Values>({
     resolver: zodResolver(schema),
     defaultValues: { email: '', password: '', keepSignedIn: false },
@@ -45,7 +51,7 @@ export const LoginForm = () => {
         return
       }
       if (res.code === 'ASE-001') {
-        methods.setError('password', { message: 'Invalid email or password' })
+        methods.setError('password', { message: t('login.invalidCredentials') })
         captcha.reset()
         return
       }
@@ -69,19 +75,19 @@ export const LoginForm = () => {
     <FormProvider {...methods}>
       <Box component="form" onSubmit={methods.handleSubmit(onSubmit)} noValidate>
         <Stack spacing={2} sx={{ maxWidth: 360 }}>
-          <RHFTextField name="email" label="Email" type="email" autoComplete="username" />
+          <RHFTextField name="email" label={t('login.email')} type="email" autoComplete="username" />
           <RHFTextField
             name="password"
-            label="Password"
+            label={t('login.password')}
             type="password"
             autoComplete="current-password"
           />
           <FormControlLabel
             control={<Checkbox {...methods.register('keepSignedIn')} />}
-            label="Keep me signed in"
+            label={t('login.keepSignedIn')}
           />
           <Button type="submit" disabled={login.isPending}>
-            Sign in
+            {t('login.signIn')}
           </Button>
           {captcha.element}
         </Stack>
