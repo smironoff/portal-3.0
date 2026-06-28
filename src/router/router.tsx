@@ -5,6 +5,7 @@ import { AuthenticatedRoute } from './routes/authenticated'
 import { OnboardingRoute } from '@/features/onboarding/routes/onboarding'
 import { LoginRoute } from '@/features/auth/routes/login'
 import { RegisterRoute } from '@/features/registration/routes/register'
+import { PersonalInformationRoute } from '@/features/registration/routes/personalInformation'
 import { TwoFactorRoute } from '@/features/auth/routes/twoFactor'
 import { ResetRequestRoute } from '@/features/auth/routes/resetRequest'
 import { ResetSentRoute } from '@/features/auth/routes/resetSent'
@@ -17,6 +18,7 @@ const routeTree = RootRoute.addChildren([
   IndexRoute,
   LoginRoute,
   RegisterRoute,
+  PersonalInformationRoute,
   TwoFactorRoute,
   ResetRequestRoute,
   ResetSentRoute,
