@@ -139,11 +139,27 @@ Between the callback and the social-registration screen, a `socialDraft` holds t
 - **e2e (Playwright, mocked):** stub the Keycloak token endpoint, `/auth/profile/status`, `/auth/register` (bearer), and `simplified_submit_level_one`. Drive the new-user path (Apple, names missing in the token, so the screen collects them) through to `/onboarding`, and the returning-user path (`needsCompletion: false`) through to the post-login landing. The full-page redirect to Keycloak is mocked at the route boundary; the real Keycloak cannot be driven in Playwright.
 - **Live (manual):** verify the open questions below against UAT before and during the build, as was done for Phase A.
 
-## Open questions (resolve via live UAT verification during the plan)
+## Live UAT verification (2026-06-28)
 
-1. **Session/token model for the returning-user branch.** Does `/auth/profile/status` (or a follow-up call) return portal `AuthTokens`, or does the app use the Keycloak tokens directly as the session credential? Legacy simply sets logged-in after the check. This determines what `tokenStore` holds for a returning social user and is the primary item to verify before coding the callback branch.
-2. **Keycloak configuration for portal-3.0 UAT.** Exact `KEYCLOAK_URL`, `KEYCLOAK_REALM`, `KEYCLOAK_CLIENT_ID` for the portal-3.0 client, and confirmation that the Google and Apple identity-provider brokers are enabled in that realm with the `/account/callback` redirect URI allow-listed.
-3. **`simplified_submit_level_one` for a social applicant.** Confirm it needs no field the email/password path omits, and confirm whether `recaptchaResponse` is required on the social create (the provider OAuth should satisfy the human check, so it is expected to be omitted).
+Probed the real UAT auth infrastructure directly (read-only, no credentials, no client data). Results, with the corrections they imply:
+
+**Confirmed:**
+
+- **Host:** the real auth and Keycloak host is `https://uat-auth-new.thinkmarkets.com` (both the portal-3.0 dev proxy and the legacy proxy target it for `/auth` and `/realms`). The OIDC discovery document at `…/realms/thinkmarkets/.well-known/openid-configuration` returns HTTP 200 and lists S256 in `code_challenge_methods_supported`, so PKCE S256 is supported.
+- **Realm:** `thinkmarkets` (correct in our env).
+- **Google and Apple brokers are both enabled.** With a valid PKCE challenge, the correct client, and an allow-listed redirect URI, `…/openid-connect/auth?...&kc_idp_hint=google` returns `303 → …/realms/thinkmarkets/broker/google/login`, and `kc_idp_hint=apple` returns `303 → …/broker/apple/login`. A control hint of `facebookX` returned the plain login page (HTTP 200, no broker redirect), confirming the broker redirect fires only for genuinely configured providers.
+- **`/auth/profile/status` exists** on `uat-auth-new`: without a bearer it returns `HTTP 401 {"code":"ASE-002","description":"Unauthorized"}`. The new-vs-returning gate is real and bearer-protected, and the auth-adapter validates the bearer token.
+
+**Corrections to the current config (must fix before the social flow can work):**
+
+1. **Client id is `web-app`, not `portal-web`.** On `uat-auth-new`, `client_id=portal-web` returns HTTP 400 "Client not found"; `client_id=web-app` returns the login form (HTTP 200). The current `.env.uat` and `.env.development` set `VITE_KEYCLOAK_CLIENT_ID=portal-web`, which is wrong for the Keycloak browser flow. (It does not affect the auth-adapter REST endpoints, which is why email/password registration still works.) Legacy `config.dev.json` confirms `KEYCLOAK_CLIENT_ID: "web-app"`.
+2. **`.env.uat` host is wrong.** It sets `AUTH_URL`/`KEYCLOAK_URL` to `uat-auth.thinkmarkets.com` (no `-new`), which returns 404 for the realm and `/auth/profile/status`. The correct host is `uat-auth-new.thinkmarkets.com`. The file already carries a `# TODO confirm UAT URLs with backend` note. (Dev mode is unaffected because the dev proxy targets `uat-auth-new` directly.)
+3. **Redirect URI allow-list.** The `web-app` client accepts `https://portal-uat.thinkmarkets.com/account/callback`, `https://portal-staging.thinkmarkets.com/account/callback`, and the production origin, but **rejects `https://portal-test.thinkmarkets.com/account/callback`** (the local dev origin) with "Invalid parameter: redirect_uri". Local dev testing of the social flow is therefore blocked until the backend/Keycloak team allow-lists the `portal-test` callback URI for the `web-app` client (or we test against an allow-listed origin).
+
+## Open questions (remaining after verification)
+
+1. **Session/token model for the returning-user branch (primary residual item).** The auth-adapter accepts the Keycloak id_token as a bearer credential (proven by `/auth/profile/status`), and legacy simply sets logged-in for returning users without a separate token-exchange call, which implies the Keycloak tokens from the code exchange become the session and are stored for subsequent auth-adapter and TFBO calls. What is not yet proven headlessly is the exact `tokenStore` wiring: whether the Keycloak `access_token`/`id_token` drive the TFBO `/cportal/nsdata` session the same way the email/password portal tokens do, and whether the social `/auth/register` returns its own portal tokens to store instead. Resolve with one real social login in the UAT browser (a real Google/Apple account is required; this cannot be driven in Playwright) or a backend confirmation, before coding the callback branch.
+2. **`simplified_submit_level_one` for a social applicant.** Legacy `buildAppInfo` sends no `recaptchaResponse` on the social create, so the provider OAuth is expected to satisfy the human check. Confirm against the backend during the build that the social create omits `recaptchaResponse` and needs no field the email/password path omits.
 
 ## Definition of done
 
