@@ -16,3 +16,6 @@ export const useSubmitLevelOne = () =>
 
 export const useSubmitLevelTwo = () =>
   useMutation({ mutationFn: (app: Partial<AppInfo>) => api.submitLevelTwo(app) })
+
+export const useApplicationStatuses = (enabled: boolean) =>
+  useQuery({ queryKey: ['applicationStatuses'], queryFn: api.loadApplicationStatuses, enabled })

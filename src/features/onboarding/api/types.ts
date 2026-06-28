@@ -85,3 +85,16 @@ export interface IncrementalSubmitResponse {
 export interface SubmitLevelResponse {
   applicationId: number
 }
+
+// Returned by the `check_application_statuses` action (snake_case from the backend).
+// This is the real application lifecycle status; getLastApplicationsInfo has no status.
+export interface ApplicationStatusResponse {
+  application_id: string
+  application_type: string
+  application_status: string
+  organization_id: string
+  appropriateness_level: string
+  preKycRequired: boolean
+  client_boarded_green_id: boolean
+  green_id_status: string
+}

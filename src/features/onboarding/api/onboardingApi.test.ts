@@ -43,4 +43,18 @@ describe('onboardingApi', () => {
     await submitLevelTwo({ applicationId: 1 })
     expect(http.tfboCall).toHaveBeenCalledWith('application', 'simplified_submit_level_two', { applicationId: 1 }, 0)
   })
+
+  it('loadApplicationStatuses posts check_application_statuses and returns the array', async () => {
+    http.tfboCall.mockResolvedValue({ payload: [{ result: [{ application_status: 'APPROVED' }] }] })
+    const { loadApplicationStatuses } = await import('./onboardingApi')
+    const statuses = await loadApplicationStatuses()
+    expect(http.tfboCall).toHaveBeenCalledWith('application', 'check_application_statuses', {}, 0)
+    expect(statuses[0]?.application_status).toBe('APPROVED')
+  })
+
+  it('loadApplicationStatuses returns [] for a non-array payload', async () => {
+    http.tfboCall.mockResolvedValue({ payload: [{ result: {} }] })
+    const { loadApplicationStatuses } = await import('./onboardingApi')
+    expect(await loadApplicationStatuses()).toEqual([])
+  })
 })
