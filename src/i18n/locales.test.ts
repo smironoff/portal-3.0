@@ -22,7 +22,9 @@ describe('locale completeness', () => {
     const enKeys = new Set(Object.keys(flatten(load('en', ns))))
     for (const lang of LANGS) {
       it(`${lang}/${ns}.json exists and has no keys outside the English set`, () => {
-        expect(existsSync(join(root, 'public/locales', lang, `${ns}.json`))).toBe(true)
+        const filePath = join(root, 'public/locales', lang, `${ns}.json`)
+        expect(existsSync(filePath)).toBe(true)
+        if (!existsSync(filePath)) return
         const langKeys = Object.keys(flatten(load(lang, ns)))
         const orphans = langKeys.filter((k) => !enKeys.has(k))
         expect(orphans).toEqual([])
