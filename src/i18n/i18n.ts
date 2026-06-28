@@ -11,7 +11,7 @@ export const initI18n = (defaultLanguage: string, buildVersion: string) => {
     .init({
       lng: defaultLanguage,
       fallbackLng: 'en',
-      ns: ['common'],
+      ns: ['common', 'auth'],
       defaultNS: 'common',
       interpolation: { escapeValue: false },
       backend: {
