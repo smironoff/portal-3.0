@@ -83,7 +83,7 @@ test('completed onboarding leads to a successful email verification', async ({ p
   await page.getByLabel(/country of residence/i).click()
   await page.getByRole('option', { name: 'Nigeria' }).click()
   await page.getByRole('checkbox', { name: /terms/i }).click()
-  await page.getByRole('button', { name: /continue/i }).click()
+  await page.getByRole('button', { name: 'Continue', exact: true }).click()
 
   // Step 2: personal information screen — fill first name, last name, DOB.
   await expect(page.getByRole('heading', { name: /personal information/i })).toBeVisible()
@@ -92,7 +92,7 @@ test('completed onboarding leads to a successful email verification', async ({ p
   await page.getByLabel(/day/i).fill('1')
   await page.getByLabel(/month/i).fill('1')
   await page.getByLabel(/year/i).fill('1990')
-  await page.getByRole('button', { name: /continue/i }).click()
+  await page.getByRole('button', { name: 'Continue', exact: true }).click()
 
   // Step 3: onboarding lands with PENDING_KYC — "Verify your email" button is shown.
   await expect(page).toHaveURL(/\/onboarding/)

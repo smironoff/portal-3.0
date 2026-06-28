@@ -28,7 +28,7 @@ test('live registration creates an account and lands in onboarding', async ({ pa
   await page.getByLabel(/country of residence/i).click()
   await page.getByRole('option', { name: 'Nigeria' }).click()
   await page.getByRole('checkbox', { name: /terms/i }).click()
-  await page.getByRole('button', { name: /continue/i }).click()
+  await page.getByRole('button', { name: 'Continue', exact: true }).click()
 
   // Personal Information screen
   await expect(page.getByRole('heading', { name: /personal information/i })).toBeVisible()
@@ -37,7 +37,7 @@ test('live registration creates an account and lands in onboarding', async ({ pa
   await page.getByLabel(/day/i).fill('1')
   await page.getByLabel(/month/i).fill('2')
   await page.getByLabel(/year/i).fill('1990')
-  await page.getByRole('button', { name: /continue/i }).click()
+  await page.getByRole('button', { name: 'Continue', exact: true }).click()
 
   await expect(page).toHaveURL(/\/onboarding/)
   await expect(page.getByText(/loading your application/i)).toHaveCount(0)

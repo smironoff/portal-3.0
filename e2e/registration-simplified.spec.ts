@@ -27,7 +27,7 @@ test('email/password registration for a simplified country reaches onboarding', 
   await page.getByLabel(/country of residence/i).click()
   await page.getByRole('option', { name: 'Nigeria' }).click()
   await page.getByRole('checkbox', { name: /terms/i }).click()
-  await page.getByRole('button', { name: /continue/i }).click()
+  await page.getByRole('button', { name: 'Continue', exact: true }).click()
 
   // Personal Information screen
   await expect(page.getByRole('heading', { name: /personal information/i })).toBeVisible()
@@ -36,7 +36,7 @@ test('email/password registration for a simplified country reaches onboarding', 
   await page.getByLabel(/day/i).fill('1')
   await page.getByLabel(/month/i).fill('1')
   await page.getByLabel(/year/i).fill('1990')
-  await page.getByRole('button', { name: /continue/i }).click()
+  await page.getByRole('button', { name: 'Continue', exact: true }).click()
 
   // Lands in onboarding (Simplified flow), not stranded
   await expect(page).toHaveURL(/\/onboarding/)
