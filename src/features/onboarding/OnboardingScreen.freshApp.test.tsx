@@ -30,5 +30,6 @@ describe('OnboardingScreen (fresh application, empty getLastApplicationsInfo)', 
     const { OnboardingScreen } = await import('./OnboardingScreen')
     render(<OnboardingScreen />)
     expect(screen.queryByText(/loading your application/i)).toBeNull()
+    expect(screen.getByText('SimplifiedFlow')).toBeInTheDocument()
   })
 })
