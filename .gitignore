@@ -33,3 +33,6 @@ playwright-report
 
 # Agent worktrees (harness-managed, never commit)
 .claude/worktrees/
+
+# Project-local scratch directory for temporary files - never commit
+/tmp/
