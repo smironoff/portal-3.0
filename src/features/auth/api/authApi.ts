@@ -1,7 +1,7 @@
 import { getHttpClient } from '@/api/client'
 import { Authorize } from '@/api/httpClient'
 import type { UserProfile } from '@/api/types'
-import type { AuthResult, PasswordResetResult } from './authTypes'
+import type { AuthResult, PasswordResetResult, RegisterUserParams } from './authTypes'
 
 export const login = (
   email: string,
@@ -72,3 +72,6 @@ export const getUserProfile = async (): Promise<UserProfile> => {
   if (!profile) throw new Error('Profile not found in response')
   return profile
 }
+
+export const registerUser = (params: RegisterUserParams): Promise<AuthResult> =>
+  getHttpClient().auth<AuthResult>('auth/register', 'post', params, Authorize.No)

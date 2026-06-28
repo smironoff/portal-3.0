@@ -82,4 +82,17 @@ describe('authApi', () => {
     const p = await getUserProfile()
     expect(p.email).toBe('a@b.com')
   })
+
+  it('registerUser posts auth/register unauthenticated with the snake_case body', async () => {
+    http.auth.mockResolvedValue({ status: 'OK', tokens: { accessToken: 'a', refreshToken: 'r', refreshTokenValidUntil: '2030' } })
+    const { registerUser } = await import('./authApi')
+    const res = await registerUser({ email_id: 'a@b.com', password: 'p', first_name: 'Test', last_name: 'User', country: 158, account_holder_title: 'Mr', preferred_language_code: 'en', brand: 'ThinkMarkets', source: 'TP3-LiveApp' })
+    expect(http.auth).toHaveBeenCalledWith(
+      'auth/register',
+      'post',
+      expect.objectContaining({ email_id: 'a@b.com', country: 158, account_holder_title: 'Mr', brand: 'ThinkMarkets' }),
+      1
+    )
+    expect(res.status).toBe('OK')
+  })
 })

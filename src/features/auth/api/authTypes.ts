@@ -29,3 +29,15 @@ export const LOGGED_IN_STATUSES: LoginStatus[] = [
   'PENDING_ID',
   'PENDING_ADDRESS',
 ]
+
+export interface RegisterUserParams {
+  email_id: string
+  password: string
+  first_name: string
+  last_name: string
+  country: number
+  account_holder_title: string
+  preferred_language_code?: string
+  brand: string
+  source?: string
+}
