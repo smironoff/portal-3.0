@@ -1,77 +1,82 @@
-# Post-login Landing (hasApproved) + Session Rehydration Design
+# Post-login Landing (real application status) + Session Rehydration Design
 
-**Date:** 2026-06-28
+**Date:** 2026-06-28 (revised after inspecting real UAT traffic)
 **Status:** Approved for planning
 **Type:** Bug fix (auth/onboarding -> dashboard handoff)
 
 ## Overview
 
-Two related, confirmed bugs prevent an approved user from reaching the dashboard:
+Two confirmed bugs prevent an approved user from reaching the dashboard. Both root causes were verified against real UAT responses (HAR capture + a live `check_application_statuses` call for an approved test account).
 
-- **Bug B (primary):** After login an approved user lands on `/onboarding` instead of `/dashboard`. `getLastApplicationsInfo` returns the full `AppInfo[]`, but `loadApplication` keeps only `apps[apps.length - 1]` (`onboardingApi.ts:17`) and `OnboardingScreen` redirects to `/dashboard` only when that single latest app's `status === 'APPROVED'`. An approved account with a newer in-progress application (the confirmed real scenario) therefore routes to onboarding. Legacy's `landUser` instead uses `hasApproved` (any application with status `APPROVED`) and sends such users to the dashboard.
-- **Bug A (secondary):** `sessionStore.loggedIn` is an in-memory flag set only during the login/2FA/register flows and never rehydrated from persisted tokens on boot (`sessionStore.ts:10`). Any full page load (typing `/dashboard`, or refreshing any authenticated route) resets it to `false`, so `AuthenticatedRoute` (`authenticated.tsx:9`) redirects to login even with valid tokens in localStorage.
+- **Bug B (primary):** After login an approved user lands on `/onboarding`. The real backend does **not** return an application lifecycle status on `getLastApplicationsInfo` — that call returns the application *form data* plus `completed`/`appropriatenessLevel` only. The actual status lives in a separate call, **`check_application_statuses`** (module `application`), which portal-3.0 never makes. `OnboardingScreen` reads `app.status` (absent), defaults it to `INCOMPLETE`, and shows the onboarding flow. (The mocked tests passed only because they fabricated a `status` field.)
+- **Bug A (secondary):** `sessionStore.loggedIn` is an in-memory flag set only during the login/2FA/register flows and never rehydrated from persisted tokens on boot (`sessionStore.ts:10`). A full page load (typing `/dashboard`, or refreshing any authenticated route) resets it to `false`, so `AuthenticatedRoute` (`authenticated.tsx:9`) redirects to login despite valid tokens.
 
-This slice fixes both so an approved user lands on, and stays on, the dashboard.
+### Verified real responses
+`check_application_statuses` (approved test account, array; last item = latest):
+```json
+[{ "application_id": "10508621", "application_type": "individual",
+   "application_status": "APPROVED", "organization_id": "14",
+   "appropriateness_level": "PASS", "preKycRequired": true,
+   "client_boarded_green_id": false, "green_id_status": "" }]
+```
+`getLastApplicationsInfo` returns the form blob: `applicationId`, `completed: true`, `appropriatenessLevel: "PASS"`, `accountHolder*`, `accountType`, `selectedPlatform`, ... and **no** status field. `get_user` also returns `approved: true`, but per the chosen approach the status source is `check_application_statuses` (the application-level lifecycle, matching legacy `landUser`).
 
 ## Goal
 
-Approved users land on `/dashboard` after login regardless of a newer in-progress application; a valid persisted session survives reloads and direct navigation.
+Approved users land on `/dashboard` after login (even with a newer in-progress application); non-approved users are routed by their *real* application status; a valid persisted session survives reloads / direct navigation.
 
 ## Non-goals
 
-- Porting the full legacy `landUser` graph (accounts/`userApps`/IB/demo/`landingPage`). portal-3.0 has no accounts model yet.
-- Changing behaviour for non-approved users (their current per-status onboarding/verify handling is unchanged).
-- A separate landing route/component. `OnboardingScreen` remains the post-login dispatcher.
-- `keepSignedIn`-conditioned persistence semantics (token validity alone governs rehydration this slice).
+- Porting the full legacy `landUser` graph (accounts/`userApps`/IB/demo/`landingPage`, pre-KYC document sub-states). We adopt its application-status decision, not its account model.
+- New onboarding status branches beyond those that already exist (`DENIED`/`FAILED`, `LEVEL1_APPROVED`, `PENDING_KYC`/`PENDING_REVIEW`, default flow). `preKycRequired`/green-id handling is out of scope.
+- `keepSignedIn`-conditioned persistence semantics (token validity alone governs rehydration).
 
-## Bug B — landing logic (hasApproved)
+## Bug B — real application status
 
-### Data layer
-Reuse the existing `getLastApplicationsInfo` call (no new endpoint). Expose the full array and a derived verdict instead of only the last app:
+### Data layer (reuse `getLastApplicationsInfo`, add `check_application_statuses`)
+- Keep `loadApplication()` (form blob from `getLastApplicationsInfo`) — still needed for the draft, `applicationId`, and `selectFlow` (`portalAccountDomain` etc.).
+- Add `loadApplicationStatuses(): Promise<ApplicationStatusResponse[]>` -> `tfboCall('application', 'check_application_statuses', {}, Authorize.Yes)`; returns the array (`[]` on a non-array payload).
+- New type `ApplicationStatusResponse` (snake_case from the backend): `application_id: string`, `application_type: string`, `application_status: string`, `organization_id: string`, `appropriateness_level: string`, `preKycRequired: boolean`, `client_boarded_green_id: boolean`, `green_id_status: string`.
 
-- `loadApplications(): Promise<AppInfo[]>` returns the full array (or `loadApplication` is augmented to surface the array). Empty/invalid response -> `[]`.
-- Derived values consumed by the screen:
-  - `hasApproved = apps.some((a) => a.status === 'APPROVED')`
-  - `current` = the application to resume for non-approved users = the latest application (`apps[apps.length - 1]`), preserving today's behaviour for that path.
+### Decision (in `OnboardingScreen`)
+- `hasApproved = statuses.some((s) => s.application_status === 'APPROVED')`.
+- `latestStatus = statuses[statuses.length - 1]?.application_status`.
+- Render order:
+  1. While either the form load or the status load is pending -> loading.
+  2. `hasApproved` -> redirect `/dashboard` (the existing `ApprovedRedirect`). This is the confirmed rule: any approved application wins, even alongside a newer incomplete one.
+  3. Otherwise branch on `latestStatus` (the real status) using the form `app` for `applicationId`/draft/`selectFlow`:
+     - `DENIED` / `FAILED` -> not-approved message
+     - `LEVEL1_APPROVED` (and draft not completed) -> resume level two (`Level1Done`)
+     - `PENDING_KYC` / `PENDING_REVIEW` -> processing / verify (`OnboardingComplete`)
+     - otherwise (`INCOMPLETE`, unknown, or no status) -> flow selection (`SimplifiedFlow` / `GeneralFlow` / unsupported)
 
-The TanStack Query hook returns `{ current, hasApproved, isLoading }` (exact shape finalised in the plan).
-
-### OnboardingScreen decision
-1. While loading -> existing loading state.
-2. If `hasApproved` -> redirect to `/dashboard` (replaces the narrow single-app `status === 'APPROVED'` check; the existing `ApprovedRedirect` component is reused).
-3. Otherwise, decide from `current` exactly as today:
-   - `DENIED` / `FAILED` -> not-approved message
-   - `LEVEL1_APPROVED` (and not completed) -> resume level two (`Level1Done`)
-   - `PENDING_KYC` / `PENDING_REVIEW` -> processing / verify (`OnboardingComplete`)
-   - otherwise -> flow selection (`SimplifiedFlow` / `GeneralFlow` / unsupported), driven by `current`'s `applicationId`.
-
-Non-approved/unknown statuses keep today's flow-selection behaviour. We deliberately do **not** adopt legacy's `default -> dashboard` for non-approved users (no accounts context exists yet; an empty dashboard would be wrong).
+The previous reliance on `app.status` is removed; status now comes from `check_application_statuses`. `resolveLandingRoute` stays `/onboarding` (the single decision point remains `OnboardingScreen`).
 
 ## Bug A — session rehydration
 
-- Add `tokenStore.hasValidSession(): boolean` — true when a refresh token is present **and** `validUntil` parses to a date in the future. Missing token, empty/unparseable `validUntil`, or a past date -> false.
-- `sessionStore`'s initial `loggedIn` is derived from `tokenStore.hasValidSession()` at store creation (app boot), restoring an authenticated session across reloads. `setLoggedIn`, `reset`, logout, and the inactivity timeout are unchanged and continue to own explicit transitions.
+- Add `tokenStore.hasValidSession(): boolean` — true when a refresh token is present **and** `validUntil` parses to a future date. Missing token / empty / unparseable / past -> false.
+- `sessionStore`'s initial `loggedIn` derives from `tokenStore.hasValidSession()` at store creation, restoring an authenticated session across reloads. `setLoggedIn`, `reset`, logout, and the inactivity timeout are unchanged.
 
 ## Architecture
 
-Unchanged post-login flow: login -> `resolveLandingRoute(profile)` (still returns `/onboarding`) -> `OnboardingScreen` dispatches. `OnboardingScreen` stays the single landing decision point (it already serves legacy `landUser`'s role); only its decision input changes (whole-list `hasApproved` rather than a single app's status). No new route, no new endpoint.
+Unchanged flow: login -> `resolveLandingRoute(profile)` (still `/onboarding`) -> `OnboardingScreen` dispatches. `OnboardingScreen` stays the single landing decision point; it now reads the real status from `check_application_statuses` (in addition to the form blob it already loads). No new route.
 
 ## Error handling
 
-- Applications fail to load -> `hasApproved` false -> onboarding path (current behaviour; safe — a transient failure shows loading then onboarding rather than wrongly exposing a dashboard).
-- Session rehydration: any failure to confirm a valid token -> `loggedIn` false (fail-safe; the user is treated as logged out and the existing refresh-on-API-call path still applies).
+- Status load fails -> `statuses` `[]` -> `hasApproved` false, `latestStatus` undefined -> onboarding flow (safe; a transient failure shows loading then onboarding rather than wrongly exposing a dashboard).
+- Session rehydration failure -> `loggedIn` false (fail-safe; the existing refresh-on-API-call path still applies).
 
 ## Testing
 
-- **Unit — `tokenStore.hasValidSession()`:** future `validUntil` + refresh token -> true; expired date -> false; missing refresh token -> false; empty/garbage `validUntil` -> false.
-- **Unit — `sessionStore` rehydration:** with a valid token seeded in localStorage, a fresh import yields `loggedIn === true`; with none, `false`. (Seed localStorage, `vi.resetModules()`, dynamic import.)
-- **Unit — `OnboardingScreen`:** applications `[{ status: 'APPROVED' }, { status: 'INCOMPLETE' }]` (approved + newer incomplete) -> redirects to `/dashboard` (the exact reported bug); a single non-approved app -> stays in the onboarding flow. Update the existing approved-redirect test to the new `{ current, hasApproved }` data shape.
-- **e2e:** an approved user (mock `getLastApplicationsInfo` -> `[{ status: 'APPROVED' }, { status: 'INCOMPLETE' }]`) logs in and lands on `/dashboard`. Existing specs (single INCOMPLETE -> onboarding; single APPROVED -> dashboard) remain valid.
+- **Unit — `tokenStore.hasValidSession()`:** future `validUntil` + refresh token -> true; expired -> false; missing token -> false; empty/garbage `validUntil` -> false.
+- **Unit — `sessionStore` rehydration:** valid token seeded -> fresh import yields `loggedIn === true`; none -> false; past `validUntil` -> false (seed localStorage, `vi.resetModules()`, dynamic import).
+- **Unit — `loadApplicationStatuses`:** posts `check_application_statuses` with `Authorize.Yes` and returns the array; non-array payload -> `[]`.
+- **Unit — `OnboardingScreen`:** statuses `[{ application_status: 'APPROVED' }]` (and `[APPROVED, INCOMPLETE]`) -> redirect `/dashboard`; `[{ application_status: 'PENDING_KYC' }]` -> processing; `[{ application_status: 'INCOMPLETE' }]` -> flow. Update existing OnboardingScreen/SimplifiedFlow test mocks to supply `useApplicationStatuses`.
+- **e2e:** approved user (mock `check_application_statuses` -> `[{ application_status: 'APPROVED' }]`) logs in -> `/dashboard`. Existing onboarding/auth specs add a `check_application_statuses` branch returning a non-approved status (e.g. `INCOMPLETE`) so they still land on onboarding.
 
 ## Definition of done
 
-- An approved account with a newer in-progress application lands on `/dashboard` after login.
-- `loadApplications`/the application hook exposes `hasApproved` derived from the whole array; `OnboardingScreen` redirects on `hasApproved`.
-- Non-approved users' behaviour is unchanged.
-- A valid persisted session survives a reload / direct navigation to an authenticated route (no bounce to login).
+- portal-3.0 calls `check_application_statuses`; `OnboardingScreen` redirects to `/dashboard` when any application is `APPROVED`, and routes non-approved users by their real latest `application_status`.
+- An approved account (incl. one with a newer in-progress application) lands on `/dashboard` after login.
+- A valid persisted session survives a reload / direct navigation to an authenticated route.
 - All suites green (lint, tsc, vitest, playwright).
