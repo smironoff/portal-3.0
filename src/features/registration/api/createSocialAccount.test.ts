@@ -12,10 +12,10 @@ import { tokenStore } from '@/api/tokenStore'
 import { useSessionStore } from '@/state/sessionStore'
 import type { SocialDraft } from '../state/registrationStore'
 
-const mockSocialRegister = socialRegister as any
-const mockSubmitLevelOne = submitLevelOne as any
-const mockTokenStore = tokenStore as any
-const mockUseSessionStore = useSessionStore as any
+const mockSocialRegister = vi.mocked(socialRegister)
+const mockSubmitLevelOne = vi.mocked(submitLevelOne)
+const mockTokenStore = vi.mocked(tokenStore, true)
+const mockUseSessionStore = vi.mocked(useSessionStore, true)
 
 const social: SocialDraft = {
   provider: 'apple',

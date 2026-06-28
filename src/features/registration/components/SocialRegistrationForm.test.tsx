@@ -23,7 +23,7 @@ vi.mock('@/features/onboarding/state/onboardingStore', () => ({
   useOnboardingStore: (sel: (s: unknown) => unknown) => sel({ patch }),
 }))
 
-let socialDraft: unknown = {
+const socialDraft: unknown = {
   provider: 'apple',
   idToken: 'IT',
   keycloakTokens: { accessToken: 'a', refreshToken: 'r', idToken: 'IT', refreshTokenValidUntil: '2030' },

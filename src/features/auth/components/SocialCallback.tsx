@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, Link as RouterLink } from '@tanstack/react-router'
 import { Stack, Typography, Link } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import { consumePkce } from '../social/pkceStore'
 import { exchangeCodeForTokens, decodeIdTokenClaims } from '../social/keycloakBroker'
 import { socialCallbackUri } from '../social/initiateSocialLogin'
@@ -14,6 +15,7 @@ import { useRegistrationStore } from '@/features/registration/state/registration
 
 export const SocialCallback = () => {
   const navigate = useNavigate()
+  const { t } = useTranslation('auth')
   const setSocialDraft = useRegistrationStore((s) => s.setSocialDraft)
   const [error, setError] = useState(false)
   const ran = useRef(false)
@@ -62,12 +64,12 @@ export const SocialCallback = () => {
   if (error) {
     return (
       <Stack spacing={2} sx={{ maxWidth: 420, mx: 'auto', mt: 4 }}>
-        <Typography>We could not complete your sign in. Please try again.</Typography>
+        <Typography>{t('social.callbackError')}</Typography>
         <Link component={RouterLink} to="/account/register" underline="hover">
-          Back to sign in
+          {t('social.callbackBackToSignIn')}
         </Link>
       </Stack>
     )
   }
-  return <Typography sx={{ mt: 4, textAlign: 'center' }}>Completing your sign in...</Typography>
+  return <Typography sx={{ mt: 4, textAlign: 'center' }}>{t('social.callbackLoading')}</Typography>
 }
