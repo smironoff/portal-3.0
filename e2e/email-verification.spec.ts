@@ -35,6 +35,7 @@ test('completed onboarding leads to a successful email verification', async ({ p
     if (action === 'incremental_submit') return ok({ applicationId: 9, applicationStatus: 'INCOMPLETE' })
     if (action === 'getLastApplicationsInfo')
       return ok([{ applicationId: 9, status: 'PENDING_KYC', portalAccountDomain: 'AU' }])
+    if (action === 'check_application_statuses') return ok([{ application_status: 'PENDING_KYC' }])
     if (action === 'get_user')
       return ok({
         id: 1,
