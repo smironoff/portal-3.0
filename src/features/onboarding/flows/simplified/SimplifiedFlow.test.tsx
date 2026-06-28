@@ -5,11 +5,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useOnboardingStore } from '../../state/onboardingStore'
 
 const submitLevelOne = vi.fn()
-const incremental = vi.fn().mockResolvedValue({ applicationStatus: 'INCOMPLETE', applicationId: 1 })
 vi.mock('../../api/onboardingQueries', () => ({
   useApplication: () => ({ data: { applicationId: 1, status: 'INCOMPLETE' }, isLoading: false }),
   useQuestions: () => ({ data: [] }),
-  useIncrementalSubmit: () => ({ mutateAsync: incremental }),
+  useIncrementalSubmit: () => ({ mutateAsync: vi.fn() }),
   useSubmitLevelOne: () => ({ mutateAsync: submitLevelOne }),
   useSubmitLevelTwo: () => ({ mutateAsync: vi.fn() }),
 }))
@@ -18,7 +17,6 @@ beforeEach(() => {
   useOnboardingStore.getState().reset()
   submitLevelOne.mockReset()
   submitLevelOne.mockResolvedValue({ applicationId: 1 })
-  incremental.mockClear()
 })
 
 describe('SimplifiedFlow level 1', () => {
@@ -38,6 +36,10 @@ describe('SimplifiedFlow level 1', () => {
     await userEvent.type(screen.getByLabelText(/year/i), '1990')
     await userEvent.click(screen.getByRole('button', { name: /continue/i }))
 
+    // non-final step advance must use submitLevelOne (not the incremental mutation)
+    expect(submitLevelOne).toHaveBeenCalledTimes(1)
+    expect(submitLevelOne).not.toHaveBeenCalledWith(expect.objectContaining({ completed: true }))
+
     await userEvent.type(screen.getByLabelText(/country code/i), '44')
     await userEvent.type(screen.getByLabelText(/phone number/i), '7700900000')
     await userEvent.click(screen.getByRole('button', { name: /continue/i }))
@@ -49,6 +51,7 @@ describe('SimplifiedFlow level 1', () => {
     await userEvent.click(screen.getByRole('checkbox'))
     await userEvent.click(screen.getByRole('button', { name: /continue|submit/i }))
 
-    expect(submitLevelOne).toHaveBeenCalled()
+    // final step must call submitLevelOne with completed: true
+    expect(submitLevelOne).toHaveBeenLastCalledWith(expect.objectContaining({ completed: true }))
   })
 })

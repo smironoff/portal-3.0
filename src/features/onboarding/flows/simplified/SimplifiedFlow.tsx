@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { LEVEL_ONE_STEPS, LEVEL_TWO_STEPS } from './flowConfig'
 import { getNextStep, getPreviousStep, getStartingStep } from '../../engine/stepMachine'
 import { useOnboardingStore } from '../../state/onboardingStore'
-import { useQuestions, useIncrementalSubmit, useSubmitLevelOne, useSubmitLevelTwo } from '../../api/onboardingQueries'
+import { useQuestions, useSubmitLevelOne, useSubmitLevelTwo } from '../../api/onboardingQueries'
 import { useNotificationStore } from '@/state/notificationStore'
 import type { ApplicationStatus } from '../../api/types'
 
@@ -16,7 +16,6 @@ export const SimplifiedFlow = ({ status, applicationId }: { status: ApplicationS
   const setCurrentStep = useOnboardingStore((s) => s.setCurrentStep)
   // TODO confirm org id source
   const questions = useQuestions(draft.organizationId as number | undefined).data ?? []
-  const incremental = useIncrementalSubmit()
   const submitLevelOne = useSubmitLevelOne()
   const submitLevelTwo = useSubmitLevelTwo()
   const notify = useNotificationStore((s) => s.push)
@@ -48,7 +47,8 @@ export const SimplifiedFlow = ({ status, applicationId }: { status: ApplicationS
         else await submitLevelTwo.mutateAsync({ ...app, completed: true, appropriatenessLevel: 'PASS' })
         await queryClient.invalidateQueries({ queryKey: ['application'] })
       } else {
-        await incremental.mutateAsync(app)
+        if (isLevelOne) await submitLevelOne.mutateAsync(app)
+        else await submitLevelTwo.mutateAsync({ ...app, appropriatenessLevel: 'PASS' })
         setCurrentStep(getNextStep(steps, currentStep, useOnboardingStore.getState().draft))
       }
     } catch {
