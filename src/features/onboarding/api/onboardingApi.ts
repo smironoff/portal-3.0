@@ -11,10 +11,10 @@ const unwrap = <T>(res: APIResponse<T>): T => {
   return item.result
 }
 
-export const loadApplication = async (): Promise<AppInfo | undefined> => {
+export const loadApplication = async (): Promise<AppInfo | null> => {
   const res = await getHttpClient().tfboCall<AppInfo[]>('application', 'getLastApplicationsInfo', {}, Authorize.Yes)
   const apps = res.payload?.[0]?.result
-  return Array.isArray(apps) ? apps[apps.length - 1] : undefined
+  return Array.isArray(apps) && apps.length > 0 ? apps[apps.length - 1]! : null
 }
 
 export const getQuestions = async (orgId: number): Promise<Question[]> => {

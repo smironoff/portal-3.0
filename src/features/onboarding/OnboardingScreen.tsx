@@ -3,6 +3,7 @@ import { Stack, Typography } from '@mui/material'
 import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/components/Button'
 import { useApplication, useApplicationStatuses } from './api/onboardingQueries'
+import type { AppInfo } from './api/types'
 import { useOnboardingStore } from './state/onboardingStore'
 import { SimplifiedFlow } from './flows/simplified/SimplifiedFlow'
 import { GeneralFlow } from './flows/general/GeneralFlow'
@@ -66,13 +67,14 @@ export const OnboardingScreen = () => {
   const latestStatus = statuses?.[statuses.length - 1]?.application_status
   const hydrate = useOnboardingStore((s) => s.hydrate)
   const draft = useOnboardingStore((s) => s.draft)
+  const current = (app ?? draft) as AppInfo
   const hydrated = useRef(false)
 
   // Always call hooks unconditionally (rules of hooks).
   // useQuestionsList and useMemo are only consumed in the general branch below.
   const questions = useQuestionsList()
   const country = useApplicantCountry()
-  const flow = selectFlow(app ?? {}, country)
+  const flow = selectFlow(current, country)
   const jurisdiction = flow.kind === 'general' ? flow.jurisdiction : 'AU'
   const steps = useMemo(() => builders[jurisdiction](questions), [jurisdiction, questions])
 
@@ -87,14 +89,16 @@ export const OnboardingScreen = () => {
 
   if (appLoading || statusLoading) return <Typography>Loading your application...</Typography>
   if (hasApproved) return <ApprovedRedirect />
-  if (!app) return <Typography>Loading your application...</Typography>
+  if (!current || (!current.applicationId && !current.portalAccountDomain)) {
+    return <Typography>Loading your application...</Typography>
+  }
 
   const status = latestStatus ?? 'INCOMPLETE'
   if (status === 'DENIED' || status === 'FAILED') {
     return <Typography>Your application was not approved. Please contact support for assistance.</Typography>
   }
   if (status === 'LEVEL1_APPROVED' && !draft.completed) {
-    return <Level1Done applicationId={app.applicationId} />
+    return <Level1Done applicationId={current.applicationId} />
   }
   if (status === 'PENDING_KYC' || status === 'PENDING_REVIEW') {
     return <OnboardingComplete />
@@ -102,10 +106,10 @@ export const OnboardingScreen = () => {
 
   if (flow.kind === 'general') {
     if (questions.length === 0) return <Typography>Loading questions...</Typography>
-    return <GeneralFlow steps={steps} applicationId={app.applicationId} questions={questions} />
+    return <GeneralFlow steps={steps} applicationId={current.applicationId} questions={questions} />
   }
   if (flow.kind === 'unsupported') {
     return <JurisdictionNotAvailable domain={flow.domain} />
   }
-  return <SimplifiedFlow status={status} applicationId={app.applicationId} />
+  return <SimplifiedFlow status={status} applicationId={current.applicationId} />
 }
