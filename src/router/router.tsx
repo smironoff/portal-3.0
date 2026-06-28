@@ -11,6 +11,7 @@ import { ResetRequestRoute } from '@/features/auth/routes/resetRequest'
 import { ResetSentRoute } from '@/features/auth/routes/resetSent'
 import { ResetConfirmRoute } from '@/features/auth/routes/resetConfirm'
 import { ResetDoneRoute } from '@/features/auth/routes/resetDone'
+import { CallbackRoute } from '@/features/auth/routes/callback'
 import { VerifyEmailRoute } from '@/features/emailVerification/routes/verifyEmail'
 import { dashboardRouteTree } from '@/features/dashboard/routes/dashboard'
 
@@ -19,6 +20,7 @@ const routeTree = RootRoute.addChildren([
   LoginRoute,
   RegisterRoute,
   PersonalInformationRoute,
+  CallbackRoute,
   TwoFactorRoute,
   ResetRequestRoute,
   ResetSentRoute,
