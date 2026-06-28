@@ -19,6 +19,7 @@ import { resolveLandingRoute } from '../landing'
 import { getUserProfile } from '../api/authApi'
 import { LOGGED_IN_STATUSES } from '../api/authTypes'
 import { aseCodeToMessageKey } from '../api/aseCodes'
+import { SocialButtonsSection } from '@/features/auth/social/SocialButtonsSection'
 
 const makeSchema = (t: TFunction<'auth'>) =>
   z.object({
@@ -91,6 +92,7 @@ export const LoginForm = () => {
             <Button type="submit" disabled={login.isPending}>
               {t('login.signIn')}
             </Button>
+            <SocialButtonsSection />
             <Box sx={{ textAlign: 'center' }}>
               <Link component={RouterLink} to="/account/reset" variant="body2" underline="hover">
                 {t('login.forgotPassword')}
