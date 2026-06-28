@@ -2,8 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-vi.setConfig({ testTimeout: 20000 })
-
 const navigate = vi.fn()
 const logout = vi.fn()
 vi.mock('@tanstack/react-router', () => ({

@@ -108,6 +108,8 @@ export default defineConfig(({ command, mode }) => ({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['src/test/setup.ts'],
+    // Raised from the 5s default: MUI cold-start transforms are slow on first import (esp. Windows).
+    testTimeout: 20000,
     exclude: ['e2e/**', 'node_modules/**', '.claude/**'],
     server: {
       deps: {
