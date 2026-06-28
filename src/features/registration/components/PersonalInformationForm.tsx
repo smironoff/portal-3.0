@@ -12,12 +12,14 @@ import { useRegistrationStore } from '../state/registrationStore'
 import { useOnboardingStore } from '@/features/onboarding/state/onboardingStore'
 import { createSimplifiedAccount } from '../api/createAccount'
 
+const CURRENT_YEAR = new Date().getFullYear()
+
 const schema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
   day: z.coerce.number().int().min(1).max(31),
   month: z.coerce.number().int().min(1).max(12),
-  year: z.coerce.number().int().min(1900).max(2025),
+  year: z.coerce.number().int().min(1900).max(CURRENT_YEAR),
 })
 type Values = z.infer<typeof schema>
 
