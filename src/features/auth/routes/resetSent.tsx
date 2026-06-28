@@ -1,21 +1,22 @@
 import { createRoute, Link } from '@tanstack/react-router'
+import { Trans, useTranslation } from 'react-i18next'
 import { Route as RootRoute } from '@/router/routes/__root'
 import { Box, Typography } from '@mui/material'
 
 // eslint-disable-next-line react-refresh/only-export-components
 const ResetSentScreen = () => {
+  const { t } = useTranslation('auth')
   const { email } = ResetSentRoute.useSearch()
   return (
     <Box sx={{ maxWidth: 400 }}>
       <Typography variant="h5" gutterBottom>
-        Check your email
+        {t('reset.sent.title')}
       </Typography>
       <Typography>
-        We have sent a password reset link to <strong>{email}</strong>. Please check your inbox and
-        follow the instructions to reset your password.
+        <Trans i18nKey="reset.sent.body" t={t} values={{ email }} components={{ 1: <strong /> }} />
       </Typography>
       <Typography sx={{ mt: 2 }}>
-        <Link to="/account/login" search={{ error: undefined }}>Back to login</Link>
+        <Link to="/account/login" search={{ error: undefined }}>{t('reset.sent.backToLogin')}</Link>
       </Typography>
     </Box>
   )

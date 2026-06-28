@@ -1,6 +1,9 @@
+import { useMemo } from 'react'
 import { useForm, FormProvider } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { useNavigate } from '@tanstack/react-router'
 import { Box, Stack } from '@mui/material'
 import { RHFTextField } from '@/components/RHFTextField'
@@ -9,10 +12,13 @@ import { useRequestPasswordReset } from '../api/authQueries'
 import { useCaptcha } from '../hooks/useCaptcha'
 import { useNotificationStore } from '@/state/notificationStore'
 
-const schema = z.object({ email: z.string().min(1, 'Email is required').email('Enter a valid email') })
-type Values = z.infer<typeof schema>
+const makeSchema = (t: TFunction<'auth'>) =>
+  z.object({ email: z.string().min(1, t('validation.emailRequired')).email(t('validation.emailInvalid')) })
+type Values = z.infer<ReturnType<typeof makeSchema>>
 
 export const PasswordResetRequestForm = () => {
+  const { t } = useTranslation('auth')
+  const schema = useMemo(() => makeSchema(t), [t])
   const methods = useForm<Values>({ resolver: zodResolver(schema), defaultValues: { email: '' } })
   const request = useRequestPasswordReset()
   const captcha = useCaptcha()
@@ -38,9 +44,9 @@ export const PasswordResetRequestForm = () => {
     <FormProvider {...methods}>
       <Box component="form" onSubmit={methods.handleSubmit(onSubmit)} noValidate>
         <Stack spacing={2} sx={{ maxWidth: 360 }}>
-          <RHFTextField name="email" label="Email" type="email" />
+          <RHFTextField name="email" label={t('reset.request.email')} type="email" />
           <Button type="submit" disabled={request.isPending}>
-            Send reset link
+            {t('reset.request.submit')}
           </Button>
           {captcha.element}
         </Stack>
