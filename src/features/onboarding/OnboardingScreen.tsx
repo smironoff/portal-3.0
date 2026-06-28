@@ -18,6 +18,14 @@ import { useIsEmailVerificationRequired, useIsUserVerified } from '@/features/em
 
 const builders = { AU: buildAuSteps, TMCY: buildTmcySteps, UK: buildUkSteps } as const
 
+const ApprovedRedirect = () => {
+  const navigate = useNavigate()
+  useEffect(() => {
+    navigate({ to: '/dashboard' })
+  }, [navigate])
+  return <Typography>Redirecting to your dashboard...</Typography>
+}
+
 const OnboardingComplete = () => {
   const navigate = useNavigate()
   const { data: profile } = useUserProfile(true)
@@ -84,7 +92,7 @@ export const OnboardingScreen = () => {
     return <Level1Done applicationId={app.applicationId} />
   }
   if (status === 'APPROVED') {
-    return <Typography>Your account is approved.</Typography>
+    return <ApprovedRedirect />
   }
   if (status === 'PENDING_KYC' || status === 'PENDING_REVIEW') {
     return <OnboardingComplete />
