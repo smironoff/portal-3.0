@@ -1,4 +1,5 @@
 import { getConfig } from '@/config/configStore'
+import type { AuthTokens } from '@/api/types'
 
 export type SocialProvider = 'google' | 'apple'
 
@@ -55,5 +56,40 @@ export const decodeIdTokenClaims = (idToken: string): SocialClaims => {
     email: (json.email as string) || (json.preferred_username as string) || '',
     firstName: (json.given_name as string) || undefined,
     lastName: (json.family_name as string) || undefined,
+  }
+}
+
+interface KeycloakTokenResponse {
+  access_token: string
+  refresh_token: string
+  id_token: string
+  refresh_expires_in: number
+}
+
+export const exchangeCodeForTokens = async (
+  code: string,
+  codeVerifier: string,
+  redirectUri: string
+): Promise<AuthTokens> => {
+  const cfg = getConfig()
+  const body = new URLSearchParams({
+    grant_type: 'authorization_code',
+    code,
+    redirect_uri: redirectUri,
+    client_id: cfg.KEYCLOAK_CLIENT_ID,
+    code_verifier: codeVerifier,
+  })
+  const res = await fetch(`${cfg.KEYCLOAK_URL}/realms/${cfg.KEYCLOAK_REALM}/protocol/openid-connect/token`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: body.toString(),
+  })
+  if (!res.ok) throw new Error(`Token exchange failed (HTTP ${res.status})`)
+  const json = (await res.json()) as KeycloakTokenResponse
+  return {
+    accessToken: json.access_token,
+    refreshToken: json.refresh_token,
+    idToken: json.id_token,
+    refreshTokenValidUntil: new Date(Date.now() + json.refresh_expires_in * 1000).toISOString(),
   }
 }
