@@ -41,3 +41,18 @@ export interface RegisterUserParams {
   brand: string
   source?: string
 }
+
+export interface SocialRegisterParams {
+  email_id: string
+  first_name: string
+  last_name: string
+  country: number
+  account_holder_title?: string
+  brand: string
+  source?: string
+}
+
+export interface ProfileStatus {
+  needsCompletion: boolean
+  missing?: string[]
+}
