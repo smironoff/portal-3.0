@@ -14,6 +14,12 @@ describe('onboardingApi', () => {
     expect(app?.status).toBe('INCOMPLETE')
   })
 
+  it('loadApplication returns null when the payload has no array', async () => {
+    http.tfboCall.mockResolvedValue({ payload: [{ result: undefined }] })
+    const { loadApplication } = await import('./onboardingApi')
+    expect(await loadApplication()).toBeNull()
+  })
+
   it('getQuestions passes orgId unauthenticated', async () => {
     http.tfboCall.mockResolvedValue({ payload: [{ result: [] }] })
     const { getQuestions } = await import('./onboardingApi')
