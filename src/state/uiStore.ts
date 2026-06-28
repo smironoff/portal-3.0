@@ -18,7 +18,7 @@ export const useUIStore = create<UIState>((set) => ({
   language: 'en',
   themeMode: 'light',
   brand: 'default',
-  sidebarOpen: true,
+  sidebarOpen: false,
   setLanguage: (language) => set({ language }),
   setThemeMode: (themeMode) => set({ themeMode }),
   setBrand: (brand) => set({ brand }),
